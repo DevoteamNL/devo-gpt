@@ -46,6 +46,93 @@ $ yarn run start:dev
 # production mode
 $ yarn run start:prod
 ```
+### Endpoint
+http://localhost:8080/api
+http://localhost:8080/api/auth/google
+
+## Azure PG and OpenAI
+```shell
+az cognitiveservices account create \ 
+--name DvtBrainOAI \
+--location swedencentral \
+--sku s0 \
+--kind OpenAI \
+--resource-group rg-dvt-parking-app
+
+# Endpoint
+az cognitiveservices account show --name DvtBrainOAI \
+--resource-group rg-dvt-parking-app | jq -r .properties.endpoint
+
+# Key
+az cognitiveservices account keys list --name DvtBrainOAI \
+--resource-group rg-dvt-parking-app | jq -r .key1
+
+# Deploy embedding-ada-002 model and GPT4
+az cognitiveservices account deployment create \
+--name DvtBrainOAI \
+--resource-group rg-dvt-parking-app \
+--deployment-name text-embedding-ada-002 \
+--model-name text-embedding-ada-002 \
+--model-version "2" --model-format OpenAI \
+--sku-capacity "100" --sku-name "Standard"
+
+az cognitiveservices account deployment create \
+--name DvtBrainOAI \
+--resource-group rg-dvt-parking-app \
+--deployment-name gpt-4-32k \
+--model-name gpt-4-32k \
+--model-version "0613" --model-format OpenAI \
+--sku-capacity "80" --sku-name "Standard"
+
+
+
+# Create Cosmos PostgreSQL Version 15 DB with lowest SKU possible
+az postgres server create \
+--resource-group rg-dvt-parking-app \
+--name dvt-parking-pg-db \
+--location europewest \
+--admin-user dvtadmin \
+--admin-password dvtadmin1234 \
+--sku-name B_Gen5_1 \
+--version 15
+
+
+curl https://swedencentral.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15\
+  -H 'Content-Type: application/json' \
+  -H 'api-key: <AZURE_OPENAI_API_KEY>' \
+  -d '{"input": "Sample Document goes here"}'
+
+# azure cognitive search service create
+az search service create \
+--name dvt-parking-search \
+--resource-group rg-dvt-parking-app \
+--location westeurope \
+--sku Basic \
+--replica-count 1 \
+--partition-count 1
+
+# azure cognitive search service delete
+az search service delete \
+--name dvt-parking-search \
+--resource-group rg-dvt-parking-app
+
+
+# Retrieve AZURE_SEARCH_ADMIN_KEY
+az search admin-key show \
+--service-name dvt-parking-search \
+--resource-group rg-dvt-parking-app
+ 
+ # Retrieve  AZURE_SEARCH_ENDPOINT
+az search show \
+--service-name dvt-parking-search \
+--resource-group rg-dvt-parking-app | jq -r .endpoint
+
+
+
+```
+
+
+
 
 ## Test
 

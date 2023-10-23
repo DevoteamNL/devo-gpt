@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UseRequestContext } from '@mikro-orm/core';
 import { UsersService } from '../users/users.service';
 import { GoogleOauth2ClientService } from './GoogleOauth2Client.service';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +14,7 @@ export class AuthService {
   ) {
     this.oAuth2Client = this.googleOauth2ClientService.getOauth2Client();
   }
-  @UseRequestContext()
+
   async refreshAccessToken() {
     const id = await this._retrieveGCPUserId();
     this.logger.log(`Geting user information for user id: ${id}`);
