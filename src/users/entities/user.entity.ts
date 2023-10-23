@@ -1,31 +1,22 @@
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { IsEmail } from 'class-validator';
-import {
-  Entity,
-  EntityDTO,
-  EntityRepositoryType,
-  PrimaryKey,
-  Property,
-  wrap,
-} from '@mikro-orm/core';
-import { UsersRepository } from './users.repository';
 
-@Entity({ customRepository: () => UsersRepository })
+@Entity() // Use the Entity decorator
 export class User {
-  [EntityRepositoryType]?: UsersRepository;
-
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Property()
+  @Column()
   @IsEmail()
   username: string;
 
-  @Property({ nullable: false })
+  @Column()
   providerId: string;
 
-  @Property({ hidden: true })
+  @Column({ select: true }) // Use select: false to hide the field in query results
   google_token: string;
-  @Property({ hidden: true, nullable: true })
+
+  @Column({ select: true, nullable: true })
   refresh_token: string;
 
   constructor(
@@ -40,9 +31,16 @@ export class User {
     this.refresh_token = refresh_token;
   }
 
-  toJSON(user?: User) {
-    return wrap<User>(this).toObject() as UserDTO;
+  // If you need to transform the entity to JSON, you can create a method like this:
+  toJSON(): UserDTO {
+    const { id, username, providerId } = this;
+    return { id, username, providerId };
   }
 }
 
-type UserDTO = EntityDTO<User>;
+// Define a DTO (Data Transfer Object) for your User entity
+interface UserDTO {
+  id: number;
+  username: string;
+  providerId: string;
+}

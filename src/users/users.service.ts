@@ -1,44 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
-import { UsersRepository } from './entities/users.repository';
+import { InjectRepository } from '@nestjs/typeorm'; // Import InjectRepository
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity'; // Import Repository
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
-  async create(createUserDto: CreateUserDto) {
-    console.log('TESt');
-    const res = this.usersRepository.create(createUserDto);
-    await this.usersRepository.flush();
-    return res;
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>, // Use Repository<User>
+  ) {}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const user = this.usersRepository.create(createUserDto);
+    await this.usersRepository.save(user);
+    return user;
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.findAll();
+    return this.usersRepository.find();
   }
 
-  findOne(id) {
-    return this.usersRepository.findOne(id);
+  async findOne(id: number): Promise<User | undefined> {
+    return this.usersRepository.findOneBy({ id });
   }
 
-  async findByProviderId(providerId: string) {
-    return await this.usersRepository.findOne({
-      providerId: providerId,
-    });
+  async findByProviderId(providerId: string): Promise<User | undefined> {
+    return this.usersRepository.findOne({ where: { providerId } });
   }
 
-  async findByUsername(username: string) {
-    return await this.usersRepository.findOne({
-      username: username,
-    });
+  async findByUsername(username: string): Promise<User | undefined> {
+    return this.usersRepository.findOne({ where: { username } });
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    return this.usersRepository.upsert(updateUserDto);
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User | undefined> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    user.google_token = updateUserDto.google_token;
+    user.refresh_token = updateUserDto.refresh_token;
+
+    await this.usersRepository.save(user);
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number): Promise<void> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    await this.usersRepository.remove(user);
   }
 }

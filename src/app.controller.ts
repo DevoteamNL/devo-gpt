@@ -10,6 +10,7 @@ import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
 import { SheetsService } from './sheets/sheets.service';
 import { OpenaiService } from './openai/openai.service';
+import { GoogledriveService } from './googledrive/googledrive.service';
 
 @Controller()
 export class AppController {
@@ -19,6 +20,7 @@ export class AppController {
     private readonly appService: AppService,
     private readonly sheetsService: SheetsService,
     private readonly openaiService: OpenaiService,
+    private readonly googledriveService: GoogledriveService,
   ) {}
 
   @Get()
@@ -44,7 +46,21 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Get('sheets')
   getSheets(@Request() req): Promise<any> {
-    return this.sheetsService.getContent(req.user.id, 5, 0);
+    return this.sheetsService.getContent(req.user.id, 15, 0);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload')
+  uploadURL(@Request() req): Promise<string> {
+    return this.googledriveService.uploadURL(
+      req.body.google_drive_url,
+      'hardik.patel@devoteam.com',
+    );
+  }
+
+  @Post('search')
+  getQuery(@Request() req) {
+    return this.googledriveService.searchresponse(req.body.query);
   }
 
   @UseGuards(JwtAuthGuard)

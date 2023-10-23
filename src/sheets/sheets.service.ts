@@ -3,10 +3,11 @@ import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { google, sheets_v4 } from 'googleapis';
 import { CommunicationsService } from '../communications/communications.service';
-import { Cron } from '@nestjs/schedule';
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+// import { Cron } from '@nestjs/schedule';
 import { GoogleOauth2ClientService } from '../auth/GoogleOauth2Client.service';
 import keys from '../config/devoteamnl-park-app.json';
+import { OpenaiService } from '../openai/openai.service';
+import { DateParserService } from '../utils/date-parser/date-parser.service';
 
 @Injectable()
 export class SheetsService {
@@ -18,8 +19,9 @@ export class SheetsService {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly communicationsService: CommunicationsService,
-    private readonly orm: MikroORM,
     private readonly googleOauth2ClientService: GoogleOauth2ClientService,
+    private readonly openaiService: OpenaiService,
+    private readonly dateParserService: DateParserService,
   ) {
     this.oAuth2Client = this.googleOauth2ClientService.getOauth2Client();
     this.oauthSAClient = new google.auth.JWT(
@@ -30,9 +32,62 @@ export class SheetsService {
     );
   }
 
-  @Cron('0 9 * * 1-5') // Runs daily at 10 AM, on work week
+  // @Cron('0 9 * * 1-5') // Runs daily at 10 AM, on work week
+  //@Cron('45 * * * * *') // Runs every 45th seconf of a minute
+  async _cronUpdateVectorDB() {
+    this.logger.log('Updating vector DB');
+    const spreadSheetContents: SpreadSheetContents[] = await this.getContent(
+      await this.retrieveGCPUserId(),
+      10,
+      0,
+    );
+    for (const spreadSheetContent of spreadSheetContents) {
+      this.logger.log(
+        `Updating vector DB for day: ${
+          spreadSheetContent.day
+        }, emails: ${spreadSheetContent.emails.toString()}`,
+      );
+      const dateToText = this.dateParserService.convertDateToText(
+        spreadSheetContent.day,
+      );
+      const text_to_embed: string = `${dateToText} ${
+        spreadSheetContent.day
+      }: ${spreadSheetContent.emails.join(',')}`;
+
+      this.logger.log('Following Text needs to be embedded:');
+      this.logger.log(text_to_embed);
+      // const embeddings = await this.openaiService.generateEmbedding(
+      //   text_to_embed,
+      // );
+      // await this.milvusParkingDataService.insertSheetTextAndEmbedding(
+      //   text_to_embed,
+      //   embeddings,
+      // );
+      // await this.pineconeService.listIndexes();
+      // await this.pineconeService.upsertRecords({
+      //   vectors: [
+      //     {
+      //       id: 'vec1',
+      //       values: embeddings,
+      //       metadata: {
+      //         text: text_to_embed,
+      //       },
+      //     },
+      //   ],
+      //   namespace: 'example-namespace',
+      // });
+      // const quer_embedding = await this.openaiService.generateEmbedding(
+      //   '09/05',
+      // );
+      // await this.pineconeService.queryRecords(quer_embedding);
+
+      // this.milvusParkingDataService.insertSheetTextAndEmbedding(
+      //this.milvusParkingDataService.insertSheetTextAndEmbedding()
+    }
+  }
+
+  //@Cron('0 9 * * 1-5') // Runs daily at 10 AM, on work week
   // @Cron('45 * * * * *') // Runs every 45th seconf of a minute
-  @UseRequestContext()
   async _cronEmailNotification() {
     const spreadSheetContents: SpreadSheetContents[] = await this.getContent(
       await this.retrieveGCPUserId(),
@@ -57,8 +112,7 @@ export class SheetsService {
   }
 
   // Internal Function that run every day 8AM to refreshAccessToken
-  @Cron('45 * * * *') // Runs daily at 8 AM
-  @UseRequestContext()
+  //@Cron('45 * * * *') // Runs daily at 8 AM
   async _cronRefreshAccessToken() {
     const id = await this.retrieveGCPUserId();
     this.logger.log(`Geting user information for user id: ${id}`);
@@ -167,23 +221,32 @@ export class SheetsService {
       dayPromise.push({ day, promise });
     }
 
-    const promiseResult = await Promise.all(
+    const promiseResult = await Promise.allSettled(
       dayPromise.map((obj) => obj.promise),
     )
-      .then((res) => res)
+      .then((results) =>
+        results.map((result, index) => ({
+          day: dayPromise[index].day,
+          status: result.status,
+          value:
+            result.status === 'fulfilled'
+              ? (result as PromiseFulfilledResult<any>).value
+              : null,
+        })),
+      )
       .catch((err) => {
         this.logger.error(err);
         return [];
       });
-    const dayResponses = dayPromise.map((obj, index) => ({
-      day: obj.day,
-      res: promiseResult[index],
-    }));
+
+    const dayResponses = promiseResult.filter(
+      (result) => result.status === 'fulfilled',
+    );
 
     for (const dayResponse of dayResponses) {
       const day_content = <SpreadSheetContents>{};
       day_content.day = dayResponse.day;
-      const rows = dayResponse.res.data.values;
+      const rows = dayResponse.value.data.values;
       if (!rows || rows.length === 0) {
         continue;
       }
@@ -195,6 +258,11 @@ export class SheetsService {
         }
       }
       day_content.emails = emails;
+      /*
+      Following function should generate embedding for day_content using openAI api and save it to
+      open source vector database
+       */
+
       contents.push(day_content);
     }
 
