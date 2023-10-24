@@ -21,17 +21,25 @@ export class OpenaiService {
     this.logger.log(message.split(' ').slice(0, 50).join(' '));
 
     try {
-      const completion = await this.openai.getChatCompletions('gpt-4-32k', [
-        {
-          role: 'system',
-          content:
-            'You are a chatbot assistant who can answer question based on context user has provided.' +
-            "if you don't find answer, say it do not know the answer. You can personalize response, " +
-            'use users name or emojis and make it non professional response. \n\n\n\n\n' +
-            context,
-        },
-        { role: 'user', content: `My name is ${senderName} \n\n\n` + message },
-      ]);
+      const completion = await this.openai.getChatCompletions(
+        'gpt-4-32k',
+        [
+          {
+            role: 'system',
+            content:
+              'You are a chatbot assistant who can answer question based on context user has provided.' +
+              "if you don't find answer, say it do not know the answer. You can personalize response, " +
+              'use users name or emojis and make it non professional response. ' +
+              'Keep answer as short as possible. few statements. \n\n\n\n\n' +
+              context,
+          },
+          {
+            role: 'user',
+            content: `My name is ${senderName} \n\n\n` + message,
+          },
+        ],
+        { temperature: 0 },
+      );
       this.logger.log(completion.choices[0].message);
       return completion.choices[0].message;
     } catch (error) {

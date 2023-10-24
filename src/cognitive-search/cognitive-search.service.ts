@@ -73,10 +73,11 @@ export class CognitiveSearchService {
     try {
       this.logger.log(`Searching for: ${query}`);
       const vectorValue = await this.openaiService.generateEmbedding(query);
+      // TODO: Fix me, vector search isn't working as expected
       const response = await this.searchClient.search(query, {
         vector: {
           value: vectorValue,
-          kNearestNeighborsCount: 3,
+          kNearestNeighborsCount: 4,
           fields: ['contentVector'],
         },
         select: ['title', 'content'],
@@ -87,10 +88,23 @@ export class CognitiveSearchService {
       for await (const result of response.results) {
         this.logger.log(`Title: ${result.document.title}`);
         // this.logger.debug(`Content: ${result.document.content}`);
+        const employeeData = `
 
-        concatenatedResults.push(
-          `${result.document.title}\n${result.document.content}\n\n\n\n====================\n\n\n\n`,
-        );
+Employee CV File Name: ${result.document.title}
+Employee CV File Content START:
+${result.document.content.replace(/[\n\r]+/g, '\n')}
+          
+          
+          
+          
+          
+Employee CV File Content END
+============================================================
+          
+          
+`;
+        // this.logger.debug(employeeData);
+        concatenatedResults.push(employeeData);
       }
 
       return concatenatedResults;
