@@ -28,20 +28,20 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post('chat')
-  async postChat(@Request() req) {
-    this.logger.log(req.body);
-    const contextGPT = await this.sheetsService.setContextGPT();
-    this.logger.log(`CONTEXT: ${contextGPT}`);
-    const userMessageAndContext = contextGPT + req.body.message.text;
-    this.logger.log(`MESSAGE to be Sent: : ${userMessageAndContext}`);
-    const chatGPTResponse = await this.openaiService.getChatResponse(
-      userMessageAndContext,
-    );
-    this.logger.log(chatGPTResponse);
-
-    return { text: chatGPTResponse.content };
-  }
+  // @Post('chat')
+  // async postChat(@Request() req) {
+  //   this.logger.log(req.body);
+  //   const contextGPT = await this.sheetsService.setContextGPT();
+  //   this.logger.log(`CONTEXT: ${contextGPT}`);
+  //   const userMessageAndContext = contextGPT + req.body.message.text;
+  //   this.logger.log(`MESSAGE to be Sent: : ${userMessageAndContext}`);
+  //   const chatGPTResponse = await this.openaiService.getChatResponse(
+  //     userMessageAndContext,
+  //   );
+  //   this.logger.log(chatGPTResponse);
+  //
+  //   return { text: chatGPTResponse.content };
+  // }
 
   @UseGuards(JwtAuthGuard)
   @Get('sheets')

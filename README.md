@@ -127,6 +127,22 @@ az search show \
 --service-name dvt-parking-search \
 --resource-group rg-dvt-parking-app | jq -r .endpoint
 
+# Create WebApp Plan for NodeJS App
+az appservice plan create \
+--resource-group rg-dvt-parking-app \
+--name dvt-devo-gpt-app-plan \
+--sku B1 \
+--is-linux
+
+
+# Create WebApp for nodejs application
+az webapp create \
+--resource-group rg-dvt-parking-app \
+--plan dvt-devo-gpt-app-plan \
+--name dvt-devo-gpt-app \
+--runtime "NODE|18-lts" \
+--deployment-local-git
+
 
 
 ```

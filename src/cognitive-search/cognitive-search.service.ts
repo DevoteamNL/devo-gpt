@@ -10,6 +10,12 @@ export class CognitiveSearchService {
   private readonly searchClient;
   private readonly indexClient: SearchIndexClient;
 
+  /*
+   * Constructor
+   * @param configService - ConfigService
+   * @param openaiService - OpenaiService
+   * @returns CognitiveSearchService
+   */
   constructor(
     private readonly configService: ConfigService,
     private readonly openaiService: OpenaiService,
@@ -28,6 +34,11 @@ export class CognitiveSearchService {
     );
   }
 
+  /*
+   * Get Azure Search config from env
+   * @returns Azure Search config
+   * @throws Error
+   */
   private getAzureSearchConfig() {
     return {
       endpoint: this.configService.get<string>('AZURE_SEARCH_ENDPOINT'),
@@ -36,6 +47,12 @@ export class CognitiveSearchService {
     };
   }
 
+  /*
+   * Upload documents to Azure Cognitive Search index
+   * @param docs - Array of documents to upload
+   * @returns void
+   * @throws Error
+   */
   async uploadDocuments(docs): Promise<void> {
     try {
       this.logger.log('Uploading documents to ACS index...');
@@ -46,10 +63,17 @@ export class CognitiveSearchService {
   }
 
   // return top 4 results
+  /*
+   * Do semantic search
+   * @param query - Query to search
+   * @returns Array of concatenated results
+   * @throws Error
+   */
   async doSemanticHybridSearch(query: string): Promise<string[]> {
     try {
+      this.logger.log(`Searching for: ${query}`);
       const vectorValue = await this.openaiService.generateEmbedding(query);
-      const response = await this.searchClient.search(undefined, {
+      const response = await this.searchClient.search(query, {
         vector: {
           value: vectorValue,
           kNearestNeighborsCount: 3,

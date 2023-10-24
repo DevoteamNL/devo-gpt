@@ -13,6 +13,7 @@ import { UtilsModule } from './utils/utils.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GoogledriveModule } from './googledrive/googledrive.module';
 import { CognitiveSearchModule } from './cognitive-search/cognitive-search.module';
+import { ChatModule } from './chat/chat.module';
 
 const ENV = process.env.NODE_ENV;
 @Module({
@@ -42,6 +43,7 @@ const ENV = process.env.NODE_ENV;
     UtilsModule,
     GoogledriveModule,
     CognitiveSearchModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, CommunicationsService],
