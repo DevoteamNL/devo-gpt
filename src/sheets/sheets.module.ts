@@ -3,7 +3,7 @@ import { SheetsService } from './sheets.service';
 import { UsersModule } from '../users/users.module';
 import { CommunicationsModule } from '../communications/communications.module';
 import { AuthModule } from '../auth/auth.module';
-import { OpenaiModule } from '../openai/openai.module';
+// import { OpenaiModule } from '../openai/openai.module';
 import { UtilsModule } from '../utils/utils.module';
 
 @Module({
@@ -11,7 +11,7 @@ import { UtilsModule } from '../utils/utils.module';
     UsersModule,
     CommunicationsModule,
     AuthModule,
-    OpenaiModule,
+    // OpenaiModule,
     UtilsModule,
   ],
   providers: [SheetsService],

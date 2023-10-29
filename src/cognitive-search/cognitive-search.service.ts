@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SearchClient, SearchIndexClient } from '@azure/search-documents';
 import { AzureKeyCredential } from '@azure/openai';
@@ -10,8 +10,15 @@ export class CognitiveSearchService {
   private readonly searchClient;
   private readonly indexClient: SearchIndexClient;
 
+  /*
+   * Constructor
+   * @param configService - ConfigService
+   * @param openaiService - OpenaiService
+   * @returns CognitiveSearchService
+   */
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => OpenaiService))
     private readonly openaiService: OpenaiService,
   ) {
     const { endpoint, indexName, adminKey } = this.getAzureSearchConfig();
@@ -28,6 +35,11 @@ export class CognitiveSearchService {
     );
   }
 
+  /*
+   * Get Azure Search config from env
+   * @returns Azure Search config
+   * @throws Error
+   */
   private getAzureSearchConfig() {
     return {
       endpoint: this.configService.get<string>('AZURE_SEARCH_ENDPOINT'),
@@ -36,6 +48,12 @@ export class CognitiveSearchService {
     };
   }
 
+  /*
+   * Upload documents to Azure Cognitive Search index
+   * @param docs - Array of documents to upload
+   * @returns void
+   * @throws Error
+   */
   async uploadDocuments(docs): Promise<void> {
     try {
       this.logger.log('Uploading documents to ACS index...');
@@ -46,13 +64,21 @@ export class CognitiveSearchService {
   }
 
   // return top 4 results
+  /*
+   * Do semantic search
+   * @param query - Query to search
+   * @returns Array of concatenated results
+   * @throws Error
+   */
   async doSemanticHybridSearch(query: string): Promise<string[]> {
     try {
+      this.logger.log(`Searching for: ${query}`);
       const vectorValue = await this.openaiService.generateEmbedding(query);
-      const response = await this.searchClient.search(undefined, {
+      // TODO: Fix me, vector search isn't working as expected
+      const response = await this.searchClient.search(query, {
         vector: {
           value: vectorValue,
-          kNearestNeighborsCount: 3,
+          kNearestNeighborsCount: 4,
           fields: ['contentVector'],
         },
         select: ['title', 'content'],
@@ -63,10 +89,23 @@ export class CognitiveSearchService {
       for await (const result of response.results) {
         this.logger.log(`Title: ${result.document.title}`);
         // this.logger.debug(`Content: ${result.document.content}`);
+        const employeeData = `
 
-        concatenatedResults.push(
-          `${result.document.title}\n${result.document.content}\n\n\n\n====================\n\n\n\n`,
-        );
+Employee CV File Name: ${result.document.title}
+Employee CV File Content START:
+${result.document.content.replace(/[\n\r]+/g, '\n')}
+          
+          
+          
+          
+          
+Employee CV File Content END
+============================================================
+          
+          
+`;
+        // this.logger.debug(employeeData);
+        concatenatedResults.push(employeeData.toString());
       }
 
       return concatenatedResults;

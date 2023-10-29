@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -13,6 +13,9 @@ import { UtilsModule } from './utils/utils.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GoogledriveModule } from './googledrive/googledrive.module';
 import { CognitiveSearchModule } from './cognitive-search/cognitive-search.module';
+import { ChatModule } from './chat/chat.module';
+import { IntegrationsModule } from './integrations/integrations.module';
+import { ExtendedLoggerService } from './utils/extended-logger/extended-logger.service';
 
 const ENV = process.env.NODE_ENV;
 @Module({
@@ -42,8 +45,17 @@ const ENV = process.env.NODE_ENV;
     UtilsModule,
     GoogledriveModule,
     CognitiveSearchModule,
+    ChatModule,
+    IntegrationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, CommunicationsService],
+  providers: [
+    AppService,
+    CommunicationsService,
+    {
+      provide: Logger,
+      useClass: ExtendedLoggerService,
+    },
+  ],
 })
 export class AppModule {}

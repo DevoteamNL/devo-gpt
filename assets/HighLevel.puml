@@ -1,0 +1,50 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+
+@startuml
+package "API Server" {
+  folder "API Controllers" {
+     [ChatHandler]
+  }
+  folder "cron"{
+    [GoogleDriveScrapper]
+  }
+  folder "API Service"{
+  [AzureSearch]
+  }
+}
+
+cloud "Google Drive" {
+  [Google Drive API]
+}
+
+cloud "Azure" {
+  [Azure Cognitive Search]
+}
+
+node "AzureOpenAI" {
+  [Embeddings]
+  [GPT4]
+}
+
+cloud "API Integrations" {
+  [JoanAPI]
+  [OpenAIR]
+}
+
+
+[ChatHandler] --> [AzureOpenAI] : Identify User Query
+[ChatHandler] --> [AzureSearch]: Retrieve CVs
+[GoogleDriveScrapper] --> [Google Drive API]: Retrieve CVs
+[GoogleDriveScrapper] --> [Embeddings]: Get CVs embeddings
+[GoogleDriveScrapper] --> [AzureSearch]: Store CVs and embeddings
+[API Server] --> [API Integrations]
+[API Server] --> [GPT4]: Build context & get NLP response
+[AzureSearch] --> [Azure Cognitive Search]
+
+@enduml
+
+
+@enduml
+
