@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SearchClient, SearchIndexClient } from '@azure/search-documents';
 import { AzureKeyCredential } from '@azure/openai';
@@ -18,6 +18,7 @@ export class CognitiveSearchService {
    */
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => OpenaiService))
     private readonly openaiService: OpenaiService,
   ) {
     const { endpoint, indexName, adminKey } = this.getAzureSearchConfig();
@@ -104,7 +105,7 @@ Employee CV File Content END
           
 `;
         // this.logger.debug(employeeData);
-        concatenatedResults.push(employeeData);
+        concatenatedResults.push(employeeData.toString());
       }
 
       return concatenatedResults;

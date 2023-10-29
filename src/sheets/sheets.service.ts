@@ -20,7 +20,7 @@ export class SheetsService {
     private readonly configService: ConfigService,
     private readonly communicationsService: CommunicationsService,
     private readonly googleOauth2ClientService: GoogleOauth2ClientService,
-    private readonly openaiService: OpenaiService,
+    // private readonly openaiService: OpenaiService,
     private readonly dateParserService: DateParserService,
   ) {
     this.oAuth2Client = this.googleOauth2ClientService.getOauth2Client();

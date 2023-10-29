@@ -1,6 +1,8 @@
 import { Controller, Get, Logger, Post, Request } from '@nestjs/common';
 import { CognitiveSearchService } from '../cognitive-search/cognitive-search.service';
 import { OpenaiService } from '../openai/openai.service';
+import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
+import { ChatService } from './chat.service';
 
 @Controller('chat')
 export class ChatController {
@@ -8,8 +10,10 @@ export class ChatController {
 
   //constructor
   constructor(
+    private readonly chatService: ChatService,
     private readonly cognitiveSearchService: CognitiveSearchService,
     private readonly openaiService: OpenaiService,
+    private readonly joanDeskService: JoanDeskService,
   ) {}
 
   // Following method Post controller endpoint
@@ -19,19 +23,27 @@ export class ChatController {
   async postChat(@Request() req) {
     const chatMessage = req.body.message.text;
     const senderName = req.body.message.sender.displayName;
-    // log chat message
-    this.logger.log(`From ${senderName}, Chat message: ${chatMessage}`);
 
-    const contextGPT = await this.cognitiveSearchService.doSemanticHybridSearch(
-      chatMessage,
+    // log Name, Chat_message, Sender_email that can be parsed in Azure log analytics
+    this.logger.log(
+      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL:${req.body.message.sender.email}`,
     );
+
     const chatGPTResponse = await this.openaiService.getChatResponse(
-      contextGPT,
       senderName,
       chatMessage,
     );
     // log chat response
-    this.logger.log(`Chat response: ${chatGPTResponse.content}`);
     return { text: chatGPTResponse.content };
+  }
+
+  @Post('langchain')
+  async postLangchain(@Request() req) {
+    return this.chatService.chat(req.body.message.text);
+  }
+
+  @Get('joan-desk')
+  async getDeskDetails() {
+    return this.joanDeskService.getMe('/api/2.0/portal/me/');
   }
 }

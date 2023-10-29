@@ -24,9 +24,27 @@
 
 ## Description
 
-🤖💬 **OpenAI** integrated **Devoteam Parking Application** based on
+🤖💬 **AzureOpenAI** integrated **Devoteam GPT App** based on
 [Nest](https://github.com/nestjs/nest) TypeScript framework.
 Started as bot project turned into full fledge server side application.
+
+### Use case
+- Get available desks only in Amsterdam office, based on from and to date and time (respond with full name like "Bar table #6", "Desk #1 - Dual Monitor,Desk #10")
+- Get the employees professional work experience details based on a given name or certificate or skill (Work in progress)
+- Make desk reservation for Amsterdam office, based on timeslot, morning, afternoon or full/all day (respond with full name like "Bar table #6", "Desk #1 - Dual Monitor,Desk #10")
+- HR related questions, From Employee Handbook (Work in progress)
+
+## Example
+### Introduction
+![img_1.png](img_1.png)
+### Employee Search
+![img.png](img.png)
+### Desk Reservation
+![img_2.png](img_2.png)
+
+
+## Architecture
+![DataFlow.jpg](assets%2FDataFlow.jpg)
 
 ## Installation
 
@@ -97,10 +115,6 @@ az postgres server create \
 --version 15
 
 
-curl https://swedencentral.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15\
-  -H 'Content-Type: application/json' \
-  -H 'api-key: <AZURE_OPENAI_API_KEY>' \
-  -d '{"input": "Sample Document goes here"}'
 
 # azure cognitive search service create
 az search service create \
@@ -165,6 +179,11 @@ $ yarn run test:cov
 
 ## Features of app
 ### Technical
+- AzureOpenAI Embeddings and GPT4 integrated
+- Demonstrated cutting edge function calling feature or GPT model
+- Exposes endpoint for Google Chat bot
+- Google Drive integration
+- Azure cognitive search integration
 - OAuth2 implementation, requires for communication with Google APIs
 - JWT token (User session management)
 - Modulerarized code
@@ -172,41 +191,29 @@ $ yarn run test:cov
 - TypeScript enabled
 - Nest framework to support MVC patter
 - Example on how auotmation script can talk to AWS or Google APIs.
-- Parallel service/API call outs
-- OpenAI integrated
 
 ### Business
-- Reads SpreadSheet content, identifies parking spot for each day.
-- Reminds employee regarding their parking spot for next day.
-- GPT backed chat feature.
+- Get or reserve(WIP) desk in Joan Desk via google chat.
+- Search for employee with specific skill or certificate
+- Summarize employees' professional experience
+- WIP: Answer HR related questions from Employee Handbook
 
 
 ## ToDO
 ### Technical
 - [ ] CICD, Automated infrastructure and deployment pipeline
-- [ ] Development experience to Dev (Skills required to support backstage)
-- [ ] Most important use this base project to create in-house apps i.e. Cloud fitness framework for Azure, GCP or AWS.
-- [ ] proxy project that takes away Oauth2 complexity out of the small DevOps script (Consultants requirement)
+- [ ] Development experience to Dev
 - [ ] Introduce similar application in Python or GoLang, as DevOps usually prefers that over Node.
-- [ ] move some code form appcontroller to specific controller
+- [ ] Code enhancements
 - [ ] Move infrastructure to private DB connection
 - [ ] Change email sender from Hardik to no-reply
 - [ ] store chat history for follow up and start new thread after few messages
 - [ ] build correct inventory that Bot can understand today,tomorrow
 
 ### Business
-- [ ] Frontend for users to manage their parking
-- [ ] Allow user to remove their reservation just by clicking on link in email.
-- [ ] Move from email to chat notification
-- [ ] Improve chat integration experience. initial message from bot to explain what it can do and what it cannot do.
+- [ ] Chat integration for users to manage their parking
 - [ ] Extend functionality to seat occupation
-- [ ] User should not need to fill whole email id, just get it from google contacts
-- [ ] Remind users when the reserve parking but not desk
-- [ ] waiting list for parking spot
-- [ ] Allow user to set watch on parking spot for specific date
 - [ ] Allow user to reserve parking from chat
-- [ ] Allow user to cancel their reservation from chat
-- [ ] get email from history and send it to chat
 - [ ] timeslot for parking with two slots
 
 ## Cons
@@ -214,6 +221,8 @@ $ yarn run test:cov
 - [ ] Lack of JavaScript/TypeScript/NodeJS skill (same draw back as backstage.io)
 - [ ] Lack of development experience within DevOps
 - [ ] GPT model hallucinates a lot
+
+
 
 ## License
 
