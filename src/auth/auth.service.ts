@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private oAuth2Client;
+
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,

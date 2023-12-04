@@ -3,18 +3,20 @@ import { CognitiveSearchService } from '../cognitive-search/cognitive-search.ser
 import { OpenaiService } from '../openai/openai.service';
 import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
 import { ChatService } from './chat.service';
+import { BufferMemoryService } from '../utils/buffer-memory/buffer-memory.service';
 
 @Controller('chat')
 export class ChatController {
-  private readonly logger = new Logger(ChatController.name);
+  private readonly logger: Logger = new Logger(ChatController.name);
 
   //constructor
   constructor(
     private readonly chatService: ChatService,
-    private readonly cognitiveSearchService: CognitiveSearchService,
     private readonly openaiService: OpenaiService,
     private readonly joanDeskService: JoanDeskService,
-  ) {}
+    private readonly bufferMemoryService: BufferMemoryService,
+  ) {
+  }
 
   // Following method Post controller endpoint
   // calls cognitive search service to retrive documents based on query passed in request body
@@ -23,18 +25,28 @@ export class ChatController {
   async postChat(@Request() req) {
     const chatMessage = req.body.message.text;
     const senderName = req.body.message.sender.displayName;
+    const senderEmail = req.body.message.sender.email;
 
     // log Name, Chat_message, Sender_email that can be parsed in Azure log analytics
     this.logger.log(
-      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL:${req.body.message.sender.email}`,
+      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-
     const chatGPTResponse = await this.openaiService.getChatResponse(
       senderName,
+      senderEmail,
       chatMessage,
     );
+    const userMessageCount =
+      this.bufferMemoryService.getUserMessageCount(senderEmail);
+    let chatResponse = '';
+    if (userMessageCount == 0 || userMessageCount >= 4) {
+      chatResponse =
+        '\n\n*WARNING! NEW SESSION* WILL START With your next message\nAll Previous chat history will be ignored.';
+    } else {
+      chatResponse = `\n\n*${userMessageCount}* of 4.`;
+    }
     // log chat response
-    return { text: chatGPTResponse.content };
+    return { text: chatGPTResponse.content + chatResponse };
   }
 
   @Post('langchain')

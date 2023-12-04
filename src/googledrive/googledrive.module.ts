@@ -17,4 +17,5 @@ import { CognitiveSearchModule } from '../cognitive-search/cognitive-search.modu
   providers: [GoogledriveService],
   exports: [GoogledriveService],
 })
-export class GoogledriveModule {}
+export class GoogledriveModule {
+}

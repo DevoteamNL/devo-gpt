@@ -5,4 +5,5 @@ import { CommunicationsService } from './communications.service';
   providers: [CommunicationsService],
   exports: [CommunicationsService],
 })
-export class CommunicationsModule {}
+export class CommunicationsModule {
+}

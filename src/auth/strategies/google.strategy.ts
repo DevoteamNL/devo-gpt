@@ -34,6 +34,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       access_type: 'offline',
     };
   }
+
   async validate(
     accessToken: string,
     refreshToken: string,

@@ -5,7 +5,8 @@ import { JwtPayload } from './jwt-auth.strategy';
 
 @Injectable()
 export class JwtAuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) {
+  }
 
   login(user: User) {
     const payload: JwtPayload = { username: user.username, sub: user.id };

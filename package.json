@@ -41,6 +41,7 @@
     "googleapis": "^126.0.1",
     "langchain": "^0.0.174",
     "mammoth": "^1.6.0",
+    "moment-timezone": "^0.5.43",
     "nodejs-pptx": "^1.2.4",
     "openai": "^3.2.1",
     "passport": "^0.6.0",
