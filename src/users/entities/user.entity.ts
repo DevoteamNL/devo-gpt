@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { IsEmail } from 'class-validator';
+import { Thread } from '../../thread/entities/thread.entity';
 
 @Entity() // Use the Entity decorator
 export class User {
@@ -13,11 +14,14 @@ export class User {
   @Column()
   providerId: string;
 
-  @Column({ select: true }) // Use select: false to hide the field in query results
+  @Column({ select: false }) // Use select: false to hide the field in query results
   google_token: string;
 
-  @Column({ select: true, nullable: true })
+  @Column({ select: false, nullable: true })
   refresh_token: string;
+
+  @OneToMany(() => Thread, thread => thread.user)
+  threads: Thread[];
 
   constructor(
     providerId: string,

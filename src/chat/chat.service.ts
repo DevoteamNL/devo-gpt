@@ -8,6 +8,7 @@ export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly model: OpenAI;
   private readonly chatModel;
+
   constructor(private readonly configService: ConfigService) {
     this.model = new OpenAI({
       temperature: 0.9,

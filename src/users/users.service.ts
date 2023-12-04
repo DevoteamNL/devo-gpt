@@ -3,13 +3,16 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm'; // Import InjectRepository
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity'; // Import Repository
+import { User } from './entities/user.entity';
+import { Thread } from '../thread/entities/thread.entity'; // Import Repository
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>, // Use Repository<User>
+    @InjectRepository(Thread)
+    private readonly threadRepository: Repository<Thread>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -58,4 +61,22 @@ export class UsersService {
 
     await this.usersRepository.remove(user);
   }
+
+  // Find last 10 threads for a user
+
+  // async findLastTenThreads(userId: number): Promise<Thread[]> {
+  //   try {
+  //     const user = await this.usersRepository.findOneOrFail({ where: { id: userId } });
+  //     return this.threadRepository.find({
+  //       where: { user: user },
+  //       order: {
+  //         createdAt: 'DESC', // Or use 'id' if you don't have a 'createdAt' column
+  //       },
+  //       take: 10, // Limit the result to 10 threads
+  //     });
+  //   } catch (error) {
+  //     this.logger.error(`Failed to find last 10 threads for user ${userId}: ${error.message}`);
+  //     throw error;
+  //   }
+  // }
 }

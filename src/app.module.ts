@@ -16,8 +16,12 @@ import { CognitiveSearchModule } from './cognitive-search/cognitive-search.modul
 import { ChatModule } from './chat/chat.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { ExtendedLoggerService } from './utils/extended-logger/extended-logger.service';
+import { EmployeesModule } from './employees/employees.module';
+import { ThreadModule } from './thread/thread.module';
+import { MessageModule } from './message/message.module';
 
 const ENV = process.env.NODE_ENV;
+
 @Module({
   imports: [
     AuthModule,
@@ -47,6 +51,9 @@ const ENV = process.env.NODE_ENV;
     CognitiveSearchModule,
     ChatModule,
     IntegrationsModule,
+    EmployeesModule,
+    ThreadModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [
