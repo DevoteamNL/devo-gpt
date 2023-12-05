@@ -186,7 +186,7 @@ export class GoogledriveService {
     // Convert the buffer to a temporary file because node-pptx might need a file path
     const tmpFilePath = await this.bufferToTempFile(pptxBuffer, '.pptx');
 
-    let pptx = new PPTX.Composer();
+    const pptx = new PPTX.Composer();
     await pptx.load(tmpFilePath);
 
     let extractedText = '';
