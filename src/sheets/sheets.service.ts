@@ -50,7 +50,7 @@ export class SheetsService {
       const dateToText = this.dateParserService.convertDateToText(
         spreadSheetContent.day,
       );
-      const text_to_embed: string = `${dateToText} ${
+      const text_to_embed = `${dateToText} ${
         spreadSheetContent.day
       }: ${spreadSheetContent.emails.join(',')}`;
 
@@ -204,7 +204,7 @@ export class SheetsService {
   async getSpreadsheetContents(
     sheets: sheets_v4.Sheets,
     numberofdays: number,
-    start_day: number = 0,
+    start_day = 0,
   ) {
     this.logger.log('Retrieving google spreadsheets content');
     const days = this.getNextFewWorkDays(numberofdays, start_day);

@@ -242,7 +242,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
       ) {
         this.logger.log(`postParkingReservationHandler`);
         this.logger.log(functionCall.arguments);
-        let parkingReservationResponse: string = '';
+        let parkingReservationResponse = '';
         try {
           const { date, timeslot } = JSON.parse(functionCall.arguments); // Assuming functionCall.params contains the necessary parameters
 

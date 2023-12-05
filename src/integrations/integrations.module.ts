@@ -5,5 +5,4 @@ import { JoanDeskService } from './joan-desk/joan-desk.service';
   providers: [JoanDeskService],
   exports: [JoanDeskService],
 })
-export class IntegrationsModule {
-}
+export class IntegrationsModule {}

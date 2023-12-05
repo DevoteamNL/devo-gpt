@@ -17,5 +17,4 @@ import { UtilsModule } from '../utils/utils.module';
   providers: [SheetsService],
   exports: [SheetsService],
 })
-export class SheetsModule {
-}
+export class SheetsModule {}

@@ -4,8 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CommunicationsService {
-  constructor(private readonly configService: ConfigService) {
-  }
+  constructor(private readonly configService: ConfigService) {}
 
   private readonly logger = new Logger(CommunicationsService.name);
 
@@ -39,14 +38,14 @@ export class CommunicationsService {
       this.configService.get('EMAIL_SENDER'),
       'Reserved Parking Spot Notification',
       `Dear ${to.split('.')[0]},\n\n` +
-      `We would like to inform you that you have reserved parking spot for tomorrow.\n\n` +
-      `You can view your reserved parking spot by following this link: ${parkingViewLink}\n\n` +
-      'If you are not going to use your reserved parking spot, ' +
-      'we kindly request that you free it up for others to utilize.\n\n' +
-      'Thank you for your co-operation.\n\n' +
-      `This is Auto-Generated email. Don't reply to this email. reach out to HR\n` +
-      'Best regards,\n' +
-      'HR Team',
+        `We would like to inform you that you have reserved parking spot for tomorrow.\n\n` +
+        `You can view your reserved parking spot by following this link: ${parkingViewLink}\n\n` +
+        'If you are not going to use your reserved parking spot, ' +
+        'we kindly request that you free it up for others to utilize.\n\n' +
+        'Thank you for your co-operation.\n\n' +
+        `This is Auto-Generated email. Don't reply to this email. reach out to HR\n` +
+        'Best regards,\n' +
+        'HR Team',
     );
 
     this.logger.log(`Sending... ${to}`);

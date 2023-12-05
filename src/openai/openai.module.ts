@@ -16,5 +16,4 @@ import { UtilsModule } from '../utils/utils.module';
   providers: [OpenaiService],
   exports: [OpenaiService],
 })
-export class OpenaiModule {
-}
+export class OpenaiModule {}

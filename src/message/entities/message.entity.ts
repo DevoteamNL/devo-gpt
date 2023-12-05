@@ -6,9 +6,9 @@ export class Message {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Thread, thread => thread.id)
+  @ManyToOne(() => Thread, (thread) => thread.id)
   thread: Thread;
 
   @Column('json')
-  content: any;  // JSON content of the message
+  content: any; // JSON content of the message
 }

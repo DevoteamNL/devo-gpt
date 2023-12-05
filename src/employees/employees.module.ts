@@ -7,5 +7,4 @@ import { CognitiveSearchModule } from '../cognitive-search/cognitive-search.modu
   providers: [EmployeesService],
   exports: [EmployeesService],
 })
-export class EmployeesModule {
-}
+export class EmployeesModule {}

@@ -5,8 +5,7 @@ import { CognitiveSearchService } from './cognitive-search.service';
 export class CognitiveSearchController {
   constructor(
     private readonly cognitiveSearchService: CognitiveSearchService,
-  ) {
-  }
+  ) {}
 
   @Get('search')
   getQuery(@Request() req) {

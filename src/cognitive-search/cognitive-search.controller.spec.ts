@@ -9,7 +9,9 @@ describe('CognitiveSearchController', () => {
       controllers: [CognitiveSearchController],
     }).compile();
 
-    controller = module.get<CognitiveSearchController>(CognitiveSearchController);
+    controller = module.get<CognitiveSearchController>(
+      CognitiveSearchController,
+    );
   });
 
   it('should be defined', () => {

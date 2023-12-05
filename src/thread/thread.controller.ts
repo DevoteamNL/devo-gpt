@@ -1,12 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ThreadService } from './thread.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { UpdateThreadDto } from './dto/update-thread.dto';
+import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
 
+@UseGuards(GoogleTokenGuard)
 @Controller('thread')
 export class ThreadController {
-  constructor(private readonly threadService: ThreadService) {
-  }
+  constructor(private readonly threadService: ThreadService) {}
 
   @Post()
   create(@Body() createThreadDto: CreateThreadDto) {
