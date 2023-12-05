@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { UpdateThreadDto } from './dto/update-thread.dto';
@@ -15,8 +20,7 @@ export class ThreadService {
     private readonly threadRepository: Repository<Thread>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
-  ) {
-  }
+  ) {}
 
   create(createThreadDto: CreateThreadDto) {
     return 'This action adds a new thread';
@@ -49,7 +53,9 @@ export class ThreadService {
     let thread: Thread;
     try {
       // Correct way to pass the ID to findOneOrFail
-      thread = await this.threadRepository.findOneOrFail({ where: { id: threadId } });
+      thread = await this.threadRepository.findOneOrFail({
+        where: { id: threadId },
+      });
     } catch (error) {
       // Handle the case where the thread doesn't exist
       throw new NotFoundException(`Thread with ID ${threadId} not found.`);
@@ -62,7 +68,10 @@ export class ThreadService {
     return this.messageRepository.save(message);
   }
 
-  async findMessagesByRole(threadId: number, roles: string[]): Promise<Message[]> {
+  async findMessagesByRole(
+    threadId: number,
+    roles: string[],
+  ): Promise<Message[]> {
     try {
       return this.messageRepository.find({
         where: {
@@ -92,6 +101,4 @@ export class ThreadService {
       throw error;
     }
   }
-
-
 }

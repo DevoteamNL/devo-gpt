@@ -7,5 +7,4 @@ import { BufferMemoryService } from './buffer-memory/buffer-memory.service';
   providers: [DateParserService, ExtendedLoggerService, BufferMemoryService],
   exports: [DateParserService, BufferMemoryService],
 })
-export class UtilsModule {
-}
+export class UtilsModule {}

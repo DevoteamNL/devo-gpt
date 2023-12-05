@@ -20,7 +20,7 @@ export class User {
   @Column({ select: false, nullable: true })
   refresh_token: string;
 
-  @OneToMany(() => Thread, thread => thread.user)
+  @OneToMany(() => Thread, (thread) => thread.user)
   threads: Thread[];
 
   constructor(

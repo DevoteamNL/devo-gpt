@@ -9,8 +9,7 @@ export class EmployeesService {
   constructor(
     @Inject(forwardRef(() => CognitiveSearchService))
     private readonly cognitiveSearchService: CognitiveSearchService,
-  ) {
-  }
+  ) {}
 
   async getEmployeesWorkDetails(
     name: string,

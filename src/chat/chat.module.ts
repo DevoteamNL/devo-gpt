@@ -16,5 +16,4 @@ import { UtilsModule } from '../utils/utils.module';
   providers: [ChatService],
   controllers: [ChatController],
 })
-export class ChatModule {
-}
+export class ChatModule {}

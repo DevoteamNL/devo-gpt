@@ -15,8 +15,7 @@ export class ChatController {
     private readonly openaiService: OpenaiService,
     private readonly joanDeskService: JoanDeskService,
     private readonly bufferMemoryService: BufferMemoryService,
-  ) {
-  }
+  ) {}
 
   // Following method Post controller endpoint
   // calls cognitive search service to retrive documents based on query passed in request body

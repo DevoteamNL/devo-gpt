@@ -10,5 +10,4 @@ import { CognitiveSearchController } from './cognitive-search.controller';
   exports: [CognitiveSearchService],
   controllers: [CognitiveSearchController],
 })
-export class CognitiveSearchModule {
-}
+export class CognitiveSearchModule {}

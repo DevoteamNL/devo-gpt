@@ -329,18 +329,18 @@ export class JoanDeskService {
         parkingSpot.schedule.length === 0
           ? null
           : parkingSpot.schedule[0].reservations
-            .map(
-              (reservation: any) =>
-                `${reservation.user.first_name} ${reservation.user.last_name}`,
-            )
-            .join(', '); // Handling multiple reservations
+              .map(
+                (reservation: any) =>
+                  `${reservation.user.first_name} ${reservation.user.last_name}`,
+              )
+              .join(', '); // Handling multiple reservations
 
       return {
         id: parkingSpot.id,
         name: parkingSpot.name,
         reservationStatus,
         reservedBy,
-        toString: function() {
+        toString: function () {
           // Construct the string with available properties, omitting 'reserved by' if not applicable
           return `${this.name}, ${this.reservationStatus}${
             this.reservedBy ? `, ${this.reservedBy}` : ''
