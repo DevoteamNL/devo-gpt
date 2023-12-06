@@ -10,6 +10,7 @@ import { UpdateThreadDto } from './dto/update-thread.dto';
 import { Thread } from './entities/thread.entity';
 import { Message } from '../message/entities/message.entity';
 import { In, Repository } from 'typeorm';
+import { MessageService } from '../message/message.service';
 
 @Injectable()
 export class ThreadService {
@@ -18,87 +19,96 @@ export class ThreadService {
   constructor(
     @InjectRepository(Thread)
     private readonly threadRepository: Repository<Thread>,
-    @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>,
+    private readonly messageService: MessageService,
   ) {}
 
-  create(createThreadDto: CreateThreadDto) {
-    return 'This action adds a new thread';
+  /**
+   * Creates a new thread along with its first message.
+   * @param createThreadDto DTO for creating a thread.
+   * @returns The created thread with its messages.
+   */
+  async create(createThreadDto: CreateThreadDto): Promise<Thread> {
+    try {
+      const thread = this.threadRepository.create({
+        title: createThreadDto.title,
+        user: createThreadDto.user,
+      });
+      const savedThread = await this.threadRepository.save(thread);
+
+      await this.messageService.create({
+        threadId: thread.id,
+        data: {
+          role: 'user',
+          content: createThreadDto.message,
+        },
+      });
+
+      return await this.threadRepository.findOne({
+        where: { id: savedThread.id },
+        relations: ['messages'],
+      });
+    } catch (error) {
+      this.logger.error(`Failed to create thread: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create thread: ${error.message}`,
+      );
+    }
   }
 
-  findAll() {
-    return `This action returns all thread`;
+  /**
+   * Retrieves all threads.
+   * @returns A list of all threads.
+   */
+  async findAll(): Promise<Thread[]> {
+    return await this.threadRepository.find({ relations: ['messages'] });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} thread`;
-  }
-
-  update(id: number, updateThreadDto: UpdateThreadDto) {
-    return `This action updates a #${id} thread`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} thread`;
-  }
-
-  async findAllMessages(threadId: number): Promise<Message[]> {
-    return this.messageRepository.find({
-      where: { thread: { id: threadId } },
-      relations: ['thread'],
+  async findAllByUser(userId: number): Promise<Thread[]> {
+    return await this.threadRepository.find({
+      where: { user: { id: userId } },
+      relations: ['messages'],
+      order: { id: 'DESC' },
     });
   }
 
-  async addMessage(threadId: number, content: any): Promise<Message> {
-    let thread: Thread;
-    try {
-      // Correct way to pass the ID to findOneOrFail
-      thread = await this.threadRepository.findOneOrFail({
-        where: { id: threadId },
-      });
-    } catch (error) {
-      // Handle the case where the thread doesn't exist
-      throw new NotFoundException(`Thread with ID ${threadId} not found.`);
+  /**
+   * Retrieves a single thread by its ID.
+   * @param id The ID of the thread.
+   * @returns The requested thread, if found.
+   */
+  async findOne(id: number): Promise<Thread> {
+    const thread = await this.threadRepository.findOne({
+      where: { id },
+      relations: ['messages'],
+    });
+
+    if (!thread) {
+      throw new NotFoundException(`Thread with ID ${id} not found.`);
     }
 
-    const message = new Message();
-    message.thread = thread;
-    message.content = content;
-
-    return this.messageRepository.save(message);
+    return thread;
   }
 
-  async findMessagesByRole(
-    threadId: number,
-    roles: string[],
-  ): Promise<Message[]> {
-    try {
-      return this.messageRepository.find({
-        where: {
-          thread: { id: threadId },
-          content: { role: In(roles) }, // Filter by role
-        },
-        order: {
-          id: 'DESC', // Order by ID in descending order
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to find messages: ${error.message}`);
-      throw error;
-    }
+  /**
+   * Updates a thread.
+   * @param id The ID of the thread to update.
+   * @param updateThreadDto DTO for updating a thread.
+   * @returns The updated thread.
+   */
+  async update(id: number, updateThreadDto: UpdateThreadDto): Promise<Thread> {
+    // Implementation depends on your specific requirements
+    // Example: Update thread data and return the updated thread
+    throw new Error('Method not implemented.');
   }
 
-  async countUserMessages(threadId: number): Promise<number> {
-    try {
-      return this.messageRepository.count({
-        where: {
-          thread: { id: threadId },
-          content: { role: 'user' }, // Count messages with role 'user'
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to count user messages: ${error.message}`);
-      throw error;
-    }
+  /**
+   * Removes a thread by its ID.
+   * @param id The ID of the thread to remove.
+   * @returns A confirmation message.
+   */
+  async remove(id: number): Promise<string> {
+    // Implementation depends on your specific requirements
+    // Example: Delete the thread and return a confirmation message
+    throw new Error('Method not implemented.');
   }
 }

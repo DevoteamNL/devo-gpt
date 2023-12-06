@@ -14,12 +14,13 @@ export class User {
   @Column()
   providerId: string;
 
-  @Column({ select: false }) // Use select: false to hide the field in query results
+  @Column({ select: false })
   google_token: string;
 
   @Column({ select: false, nullable: true })
   refresh_token: string;
 
+  // TODO: Add lazy loading to the threads property
   @OneToMany(() => Thread, (thread) => thread.user)
   threads: Thread[];
 
@@ -35,14 +36,12 @@ export class User {
     this.refresh_token = refresh_token;
   }
 
-  // If you need to transform the entity to JSON, you can create a method like this:
   toJSON(): UserDTO {
     const { id, username, providerId } = this;
     return { id, username, providerId };
   }
 }
 
-// Define a DTO (Data Transfer Object) for your User entity
 interface UserDTO {
   id: number;
   username: string;

@@ -10,5 +10,5 @@ export class Message {
   thread: Thread;
 
   @Column('json')
-  content: any; // JSON content of the message
+  data: any; // JSON content of the message
 }

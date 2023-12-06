@@ -5,13 +5,13 @@ import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThreadModule } from '../thread/thread.module';
 import { ThreadService } from '../thread/thread.service';
-import { Thread } from '../thread/entities/thread.entity';
-import { Message } from '../message/entities/message.entity';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Thread, Message]), // Add User entity to forFeature
+    TypeOrmModule.forFeature([User]), // Add User entity to forFeature
     ThreadModule,
+    MessageModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, ThreadService],

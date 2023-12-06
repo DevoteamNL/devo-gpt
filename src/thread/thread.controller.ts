@@ -7,30 +7,38 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ThreadService } from './thread.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { UpdateThreadDto } from './dto/update-thread.dto';
-import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { MessageService } from '../message/message.service';
 
-@UseGuards(GoogleTokenGuard)
 @Controller('thread')
 export class ThreadController {
-  constructor(private readonly threadService: ThreadService) {}
+  constructor(
+    private readonly threadService: ThreadService,
+    private readonly messageService: MessageService,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createThreadDto: CreateThreadDto) {
+  async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
+    createThreadDto.user = req.user; // Assuming the user object is available in the request after successful JWT authentication
     return this.threadService.create(createThreadDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.threadService.findAll();
+  findAllByUser(@Request() req) {
+    const userId = req.user.id;
+    return this.threadService.findAllByUser(userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.threadService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.threadService.findOne(+id);
   }
 
   @Patch(':id')
@@ -41,5 +49,24 @@ export class ThreadController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.threadService.remove(+id);
+  }
+
+  @Get(':threadId/messages')
+  async getMessagesByThreadId(@Param('threadId') threadId: string) {
+    return await this.messageService.findAllMessagesByThreadId(+threadId);
+  }
+
+  @Post(':threadId/messages')
+  async addMessageToThread(
+    @Param('threadId') threadId: string,
+    @Body() messageContent: any,
+  ) {
+    return await this.messageService.create({
+      threadId: +threadId,
+      data: {
+        role: 'user',
+        content: messageContent.text,
+      },
+    });
   }
 }
