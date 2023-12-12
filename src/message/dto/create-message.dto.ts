@@ -1,1 +1,4 @@
-export class CreateMessageDto {}
+export class CreateMessageDto {
+  threadId: number;
+  data: any;
+}
