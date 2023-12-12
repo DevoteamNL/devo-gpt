@@ -12,9 +12,10 @@ import {
 import { ThreadService } from './thread.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { UpdateThreadDto } from './dto/update-thread.dto';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { MessageService } from '../message/message.service';
+import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
 
+@UseGuards(GoogleTokenGuard)
 @Controller('thread')
 export class ThreadController {
   constructor(
@@ -22,14 +23,12 @@ export class ThreadController {
     private readonly messageService: MessageService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
     createThreadDto.user = req.user; // Assuming the user object is available in the request after successful JWT authentication
     return this.threadService.create(createThreadDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAllByUser(@Request() req) {
     const userId = req.user.id;
