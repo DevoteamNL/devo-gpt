@@ -40,7 +40,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     refreshToken: string,
     profile: any,
   ): Promise<any> {
-    const { id, emails } = profile;
+    const { id, emails, displayName } = profile;
     this.logger.log(`Validating user ${id}`);
     let user = await this.usersService.findByProviderId(id);
     if (!user) {
@@ -49,6 +49,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username: emails[0].value,
         google_token: accessToken,
         ...(refreshToken && { refresh_token: refreshToken }),
+        name: displayName,
       });
     }
     return user;

@@ -42,10 +42,15 @@ export class GoogleTokenStrategy extends PassportStrategy(
       })
       .then(async (ticket) => {
         const payload = ticket.getPayload();
-        const { sub: googleId, hd: domain, email } = payload;
+        const { sub: googleId, hd: domain, email, name } = payload;
 
         if (domain !== 'devoteam.com') {
           this.fail({ message: 'Not a Devoteam account' });
+        }
+
+        if (name === undefined) {
+          // Can happen if scope isn't set correctly.
+          this.fail({ message: 'No name in Google profile' });
         }
 
         let user = await this.usersService.findByProviderId(googleId);
@@ -55,6 +60,7 @@ export class GoogleTokenStrategy extends PassportStrategy(
             username: email,
             google_token: '', // TODO: Figure out how we can get the google token from the sign in JWT.
             refresh_token: '',
+            name: name,
           });
         }
         this.success(user);

@@ -12,6 +12,9 @@ export class User {
   username: string;
 
   @Column()
+  name: string;
+
+  @Column()
   providerId: string;
 
   @Column({ select: false })
