@@ -39,7 +39,7 @@ const ENV = process.env.NODE_ENV;
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // Change this for PROD
       logging: true,
-      ssl: true,
+      ssl: false,
       autoLoadEntities: true,
     }),
     UsersModule,
