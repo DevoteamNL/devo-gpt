@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Thread } from './entities/thread.entity';
 import { Message } from '../message/entities/message.entity';
 import { MessageModule } from '../message/message.module';
+import { OpenaiModule } from '../openai/openai.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Thread]),
     forwardRef(() => MessageModule),
+    OpenaiModule,
   ],
   controllers: [ThreadController],
   providers: [ThreadService],

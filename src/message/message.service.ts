@@ -5,6 +5,7 @@ import { Message } from './entities/message.entity';
 import { Thread } from '../thread/entities/thread.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ChatMessage } from '@azure/openai';
 
 @Injectable()
 export class MessageService {
@@ -29,7 +30,7 @@ export class MessageService {
     return `This action removes a #${id} message`;
   }
 
-  async findAllMessagesByThreadId(threadId: number): Promise<Message[]> {
+  async findAllMessagesByThreadId(threadId: number): Promise<ChatMessage[]> {
     const messages: Message[] = await this.messageRepository.find({
       where: { thread: { id: threadId } },
       order: { id: 'ASC' },
@@ -37,7 +38,7 @@ export class MessageService {
     return messages.map((message: Message) => message.data);
   }
 
-  async findChatMessagesByThreadId(threadId: number): Promise<Message[]> {
+  async findChatMessagesByThreadId(threadId: number): Promise<ChatMessage[]> {
     const messages: Message[] = await this.messageRepository.find({
       where: {
         thread: { id: threadId },
@@ -78,12 +79,13 @@ export class MessageService {
 
   async countUserMessages(threadId: number): Promise<number> {
     try {
-      return this.messageRepository.count({
-        where: {
-          thread: { id: threadId },
-          data: { role: 'user' }, // Count messages with role 'user'
-        },
-      });
+      return this.messageRepository
+        .createQueryBuilder('message')
+        .where('"threadId" = :threadId AND data::jsonb @> :role::jsonb', {
+          threadId: threadId,
+          role: JSON.stringify({ role: 'user' }),
+        })
+        .getCount();
     } catch (error) {
       this.logger.error(`Failed to count user messages: ${error.message}`);
       throw error;

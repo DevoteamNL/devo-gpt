@@ -5,6 +5,9 @@ import { CognitiveSearchModule } from '../cognitive-search/cognitive-search.modu
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { EmployeesModule } from '../employees/employees.module';
 import { UtilsModule } from '../utils/utils.module';
+import { OpenaiChatService } from './openai-chat.service';
+import { MessageModule } from '../message/message.module';
+import { AzureOpenAIClientService } from './azure-openai-client.service';
 
 @Module({
   imports: [
@@ -12,8 +15,9 @@ import { UtilsModule } from '../utils/utils.module';
     forwardRef(() => EmployeesModule),
     IntegrationsModule,
     UtilsModule,
+    MessageModule,
   ],
-  providers: [OpenaiService],
-  exports: [OpenaiService],
+  providers: [OpenaiService, OpenaiChatService, AzureOpenAIClientService],
+  exports: [OpenaiService, OpenaiChatService, AzureOpenAIClientService],
 })
 export class OpenaiModule {}

@@ -1,4 +1,5 @@
 {
     "appService.defaultWebAppToDeploy": "/subscriptions/42d34e43-05c7-4265-b47c-1f6e3614f517/resourceGroups/rg-dvt-parking-app/providers/Microsoft.Web/sites/dvt-devo-gpt",
-    "appService.deploySubpath": "."
+    "appService.deploySubpath": ".",
+    "files.eol": "\n"
 }

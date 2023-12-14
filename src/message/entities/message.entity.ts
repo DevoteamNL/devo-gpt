@@ -9,6 +9,6 @@ export class Message {
   @ManyToOne(() => Thread, (thread) => thread.id)
   thread: Thread;
 
-  @Column('json')
+  @Column('jsonb')
   data: any; // JSON content of the message
 }
