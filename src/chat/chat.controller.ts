@@ -38,11 +38,11 @@ export class ChatController {
     const userMessageCount =
       this.bufferMemoryService.getUserMessageCount(senderEmail);
     let chatResponse = '';
-    if (userMessageCount == 0 || userMessageCount >= 4) {
+    if (userMessageCount == 0 || userMessageCount >= 10) {
       chatResponse =
         '\n\n*WARNING! NEW SESSION* WILL START With your next message\nAll Previous chat history will be ignored.';
     } else {
-      chatResponse = `\n\n*${userMessageCount}* of 4.`;
+      chatResponse = `\n\n*${userMessageCount}* of 10.`;
     }
     // log chat response
     return { text: chatGPTResponse.content + chatResponse };

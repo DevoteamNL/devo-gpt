@@ -1,39 +1,26 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  AzureKeyCredential,
-  ChatMessage,
-  FunctionDefinition,
-  OpenAIClient,
-} from '@azure/openai';
+import { ChatMessage, FunctionDefinition } from '@azure/openai';
 import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
 import { EmployeesService } from '../employees/employees.service';
 import { BufferMemoryService } from '../utils/buffer-memory/buffer-memory.service';
+import { AzureOpenAIClientService } from './azure-openai-client.service';
 
 @Injectable()
 export class OpenaiService {
   private readonly logger = new Logger(OpenaiService.name);
-  private readonly openai;
   private readonly gpt35t16kDeployment = 'gpt-35-turbo-16k';
   private readonly gpt35Deployment = 'gpt-35-turbo';
   private readonly gpt4Deployment = 'gpt-4';
   private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly joanDeskService: JoanDeskService,
     @Inject(forwardRef(() => EmployeesService))
     private readonly employeesService: EmployeesService,
     private readonly bufferMemoryService: BufferMemoryService,
-  ) {
-    this.openai = new OpenAIClient(
-      // 'https://swedencentral.openai.azure.com',
-      'https://swedencentral.api.cognitive.microsoft.com/',
-      new AzureKeyCredential(
-        this.configService.get<string>('AZURE_OPENAI_API_KEY'),
-      ),
-    );
-  }
+    private readonly azureOpenAIClient: AzureOpenAIClientService,
+  ) {}
 
   // Get the employees professional work experience details based on a given employee name or certificate name or skill name
 
@@ -82,7 +69,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
       };
       messages.push(userMessage);
 
-      const completion = await this.openai.getChatCompletions(
+      const completion = await this.azureOpenAIClient.getChatCompletions(
         this.gpt4Deployment,
         messages,
         {
@@ -128,7 +115,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         this.logger.debug(`########`);
         this.logger.debug(messages);
         const completionEmployeesWorkDetails =
-          await this.openai.getChatCompletions(
+          await this.azureOpenAIClient.getChatCompletions(
             this.gpt432kDeployment,
             messages,
             {
@@ -173,11 +160,12 @@ If user just says Hi or how are you to start conversation, you can respond with 
         });
         this.logger.debug(`########`);
         this.logger.debug(messages);
-        const completionReservationDesks = await this.openai.getChatCompletions(
-          this.gpt35Deployment,
-          messages,
-          { temperature: 0 },
-        );
+        const completionReservationDesks =
+          await this.azureOpenAIClient.getChatCompletions(
+            this.gpt35Deployment,
+            messages,
+            { temperature: 0 },
+          );
         this.logger.log(`completionReservationDesks Response:`);
         this.logger.log(completionReservationDesks.choices[0].message);
         messages.push(completionReservationDesks.choices[0].message);
@@ -212,11 +200,12 @@ If user just says Hi or how are you to start conversation, you can respond with 
           });
           this.logger.debug(`########`);
           this.logger.debug(messages);
-          const completionAvailableDesks = await this.openai.getChatCompletions(
-            this.gpt35Deployment,
-            messages,
-            { temperature: 0 },
-          );
+          const completionAvailableDesks =
+            await this.azureOpenAIClient.getChatCompletions(
+              this.gpt35Deployment,
+              messages,
+              { temperature: 0 },
+            );
           this.logger.log(`completionAvailableDesks Response:`);
           this.logger.log(completionAvailableDesks.choices[0].message);
           messages.push(completionAvailableDesks.choices[0].message);
@@ -278,9 +267,13 @@ If user just says Hi or how are you to start conversation, you can respond with 
         this.logger.debug(`########`);
         this.logger.debug(messages);
         const completionParkingReservation =
-          await this.openai.getChatCompletions(this.gpt35Deployment, messages, {
-            temperature: 0.3,
-          });
+          await this.azureOpenAIClient.getChatCompletions(
+            this.gpt35Deployment,
+            messages,
+            {
+              temperature: 0.3,
+            },
+          );
         this.logger.log(`completionParkingReservation Response:`);
         this.logger.log(completionParkingReservation.choices[0].message);
         messages.push(completionParkingReservation.choices[0].message);
@@ -329,7 +322,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.logger.debug(`########`);
           this.logger.debug(messages);
           const completionParkingAvailability =
-            await this.openai.getChatCompletions(
+            await this.azureOpenAIClient.getChatCompletions(
               this.gpt35t16kDeployment,
               messages,
               { temperature: 0.3 },
@@ -383,10 +376,11 @@ If user just says Hi or how are you to start conversation, you can respond with 
             role: 'function',
             name: functionCall.name,
             content:
-              'Below information is in CSV format, It is desk reservation details by all employee and not to user asking' +
+              'Below information is in CSV format, It is desk reservation details by all employee.' +
+              '\nIf there is desk reservation by a user, that means that user is going to come to office that day.' +
               // '\n\n If use asked if he has desk reservation? you can check above data to see if user has any reservations' +
               // '\n\n User can also ask who has desk reservations? then you can provide him details of each user and their desk name' +
-              'Try to include calculated date and day name in response, and keep answer as concise as possible, as short as possible.' +
+              '\nTry to include calculated date and day name in response, and keep answer as concise as possible, as short as possible.' +
               '\n\n\n' +
               'Desk Name,Reservation Start,Reservation end,Employee Name(Reserved By),Employee Email\n' +
               deskReservationResponse.toString(),
@@ -394,7 +388,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.logger.debug(`########`);
           this.logger.debug(messages);
           const completionDeskReservations =
-            await this.openai.getChatCompletions(
+            await this.azureOpenAIClient.getChatCompletions(
               this.gpt35t16kDeployment,
               messages,
               { temperature: 0.7 },
@@ -435,7 +429,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
     // Use OpenAI embeddings API endpoint with text-embedding-ada-002 model
     this.logger.log(`Generating embedding`);
     try {
-      const response = await this.openai.getEmbeddings(
+      const response = await this.azureOpenAIClient.getEmbeddings(
         'text-embedding-ada-002',
         [text],
       );

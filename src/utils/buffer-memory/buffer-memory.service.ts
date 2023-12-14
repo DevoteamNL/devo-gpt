@@ -48,7 +48,7 @@ export class BufferMemoryService {
     const userMessageCount =
       messages?.filter((message) => message.role === 'user').length || 0;
 
-    if (userMessageCount >= 4) {
+    if (userMessageCount >= 10) {
       this.logger.log(`Buffer limit reached for email: ${email}.`);
       this.deleteBufferEntry(email); // Reusing deleteBufferEntry function
       this.logger.log(`Buffer entry deleted for email: ${email}`);
