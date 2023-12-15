@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
-  Logger,
-  HttpStatus,
+  Get,
   HttpException,
+  HttpStatus,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ThreadService } from './thread.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
@@ -19,8 +19,6 @@ import { MessageService } from '../message/message.service';
 import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
 import { ConfigService } from '@nestjs/config';
 import { Thread } from './entities/thread.entity';
-import { Message } from '../message/entities/message.entity';
-import { OpenaiService } from '../openai/openai.service';
 import { OpenaiChatService } from '../openai/openai-chat.service';
 
 @UseGuards(GoogleTokenGuard)
@@ -36,7 +34,7 @@ export class ThreadController {
 
   @Post()
   async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
-    createThreadDto.user = req.user; // Assuming the user object is available in the request after successful JWT authentication
+    createThreadDto.user = req.user;
     const thread: Thread = await this.threadService.create(createThreadDto);
     this.logger.log(`Created thread: ${JSON.stringify(thread)}`);
 
@@ -44,28 +42,15 @@ export class ThreadController {
     const chatMessage = createThreadDto.message;
     const senderName = 'Test Name';
     const senderEmail = req.user.username;
-
-    // log Name, Chat_message, Sender_email that can be parsed in Azure log analytics
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-    const chatGPTResponse = await this.OpenaiChatService.getChatResponse({
+    await this.OpenaiChatService.getChatResponse({
       senderName,
       senderEmail,
-      thread,
+      threadId: thread.id,
     });
-
-    // const message: Message = await this.messageService.create({
-    //   threadId: thread.id,
-    //   data: {
-    //     role: 'assistant',
-    //     content: chatGPTResponse,
-    //   },
-    // });
-
-    const updatedThread = await this.threadService.findOne(thread.id);
-    this.logger.log(`Updated thread: ${JSON.stringify(updatedThread)}`);
-    return updatedThread;
+    return this.messageService.findChatMessagesByThreadId(thread.id);
   }
 
   @Get()
@@ -96,6 +81,7 @@ export class ThreadController {
 
   @Post(':threadId/messages')
   async addMessageToThread(
+    @Request() req,
     @Param('threadId') threadId: string,
     @Body() messageContent: any,
   ) {
@@ -113,12 +99,23 @@ export class ThreadController {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    return await this.messageService.create({
+    await this.messageService.create({
       threadId: +threadId,
       data: {
         role: 'user',
         content: messageContent.text,
       },
+    });
+    const chatMessage = messageContent.text;
+    const senderName = 'Test Name';
+    const senderEmail = req.user.username;
+    this.logger.log(
+      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
+    );
+    return await this.OpenaiChatService.getChatResponse({
+      senderName,
+      senderEmail,
+      threadId,
     });
   }
 }

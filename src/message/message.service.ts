@@ -3,7 +3,7 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './entities/message.entity';
 import { Thread } from '../thread/entities/thread.entity';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatMessage } from '@azure/openai';
 
@@ -39,13 +39,16 @@ export class MessageService {
   }
 
   async findChatMessagesByThreadId(threadId: number): Promise<ChatMessage[]> {
-    const messages: Message[] = await this.messageRepository.find({
-      where: {
-        thread: { id: threadId },
-        data: { role: In(['user', 'assistant']) },
-      },
-      order: { id: 'ASC' },
-    });
+    const messages: Message[] = await this.messageRepository
+      .createQueryBuilder('message')
+      .where('message.thread.id = :threadId', { threadId })
+      .andWhere("message.data ->> 'role' IN (:...roles)", {
+        roles: ['user', 'assistant'],
+      })
+      .andWhere("message.data ->> 'content' != ''")
+      .orderBy('message.id', 'ASC')
+      .getMany();
+
     return messages.map((message: Message) => message.data);
   }
 
