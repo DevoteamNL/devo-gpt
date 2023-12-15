@@ -64,11 +64,17 @@ export class ThreadService {
   }
 
   async findAllByUser(userId: number): Promise<Thread[]> {
-    return await this.threadRepository.find({
-      where: { user: { id: userId } },
-      relations: ['messages'],
-      order: { id: 'DESC' },
-    });
+    return await this.threadRepository
+      .createQueryBuilder('thread')
+      .leftJoinAndSelect('thread.messages', 'message')
+      .where('thread.user.id = :userId', { userId })
+      .andWhere("message.data ->> 'role' IN (:...roles)", {
+        roles: ['user', 'assistant'],
+      })
+      .andWhere("message.data ->> 'content' != ''")
+      .orderBy('thread.id', 'DESC')
+      .addOrderBy('message.id', 'ASC')
+      .getMany();
   }
 
   /**

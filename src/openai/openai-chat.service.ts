@@ -1,17 +1,8 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import {
-  AzureKeyCredential,
-  ChatMessage,
-  FunctionDefinition,
-  OpenAIClient,
-} from '@azure/openai';
-import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
-import { EmployeesService } from '../employees/employees.service';
-import { BufferMemoryService } from '../utils/buffer-memory/buffer-memory.service';
+import { Injectable, Logger } from '@nestjs/common';
+import { ChatMessage, FunctionDefinition } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
-import { OpenaiService } from './openai.service';
+import { JoanDeskHandlerService } from '../integrations/joan-desk/joan-desk-handler.service';
 
 @Injectable()
 export class OpenaiChatService {
@@ -22,32 +13,37 @@ export class OpenaiChatService {
   private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly joanDeskService: JoanDeskService,
-    @Inject(forwardRef(() => EmployeesService))
-    private readonly employeesService: EmployeesService,
-    private readonly bufferMemoryService: BufferMemoryService,
     private readonly messageService: MessageService,
     private readonly azureOpenAIClient: AzureOpenAIClientService,
-    private readonly openaiService: OpenaiService,
+    private readonly joanDeskHandlerService: JoanDeskHandlerService,
   ) {}
+
+  public getFunctionDefinitions(): FunctionDefinition[] {
+    return [
+      ...this.getServiceFunctions(
+        this.joanDeskHandlerService,
+        'JoanDeskHandlerService',
+      ),
+      // ...this.getServiceFunctions(this.employeesService, 'EmployeesService'),
+      // ...this.getServiceFunctions(
+      //   this.bufferMemoryService,
+      //   'BufferMemoryService',
+      // ),
+      // Add other services as needed
+    ];
+  }
 
   // Get the employees professional work experience details based on a given employee name or certificate name or skill name
 
   //system message
   //Query message from user
   //funiton informatin
-  async getChatResponse({ senderName, senderEmail, thread }) {
-    const functions: FunctionDefinition[] = [
-      ...this.joanDeskService.getFunctionDefinitions(),
-      //...this.employeesService.getFunctionDefinitions(),
-      ...this.bufferMemoryService.getFunctionDefinitions(),
-      // ... other service function definitions
-    ];
+  async getChatResponse({ senderName, senderEmail, threadId }) {
+    const functions: FunctionDefinition[] = this.getFunctionDefinitions();
 
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
-      thread.id,
+      threadId,
     );
 
     try {
@@ -82,22 +78,94 @@ If user just says Hi or how are you to start conversation, you can respond with 
           functions: [...functions],
         },
       );
-      const response_message = completion.choices[0].message;
+      const initial_response = completion.choices[0].message;
       await this.messageService.create({
-        threadId: thread.id,
-        data: response_message,
+        threadId,
+        data: initial_response,
       });
-      chatHistory.push(response_message);
-      const functionCall = response_message.functionCall;
+      chatHistory.push(initial_response);
       this.logger.log(
         `INITIAL_RESPONSE: ${JSON.stringify(completion.choices[0].message)}`,
       );
+      const functionCall = initial_response.functionCall;
       this.logger.log(`FUNCTION_CALLING: ${JSON.stringify(functionCall)}`);
-
-      return response_message;
+      if (functionCall && functionCall.name) {
+        const function_response = await this.executeFunction(functionCall);
+        // chatHistory.push({
+        //   role: function_response.role,
+        //   functionCall: {
+        //     name: functionCall.name,
+        //     arguments: function_response.functionCall.arguments,
+        //   },
+        //   content: '',
+        // });
+        chatHistory.push({
+          role: 'function',
+          name: functionCall.name,
+          content: function_response.toString(),
+        });
+        await this.messageService.create({
+          threadId,
+          data: {
+            role: 'function',
+            name: functionCall.name,
+            content: function_response.toString(),
+          },
+        });
+        this.logger.debug(`########`);
+        this.logger.debug(chatHistory);
+        const final_completion =
+          await this.azureOpenAIClient.getChatCompletions(
+            this.gpt35Deployment,
+            chatHistory,
+            { temperature: 0 },
+          );
+        const final_response: ChatMessage = final_completion.choices[0].message;
+        this.logger.log(`final_response Response:`);
+        this.logger.log(final_response);
+        chatHistory.push(final_response);
+        await this.messageService.create({
+          threadId,
+          data: final_response,
+        });
+        return final_response;
+      }
+      return initial_response;
     } catch (error) {
       this.logger.log(error);
       throw error;
     }
+  }
+
+  private getServiceFunctions(
+    service: any,
+    serviceName: string,
+  ): FunctionDefinition[] {
+    return service
+      .getFunctionDefinitions()
+      .map((funcDef: FunctionDefinition) => {
+        return {
+          ...funcDef,
+          name: `${serviceName}-${funcDef.name}`,
+        };
+      });
+  }
+
+  public async executeFunction(functionCall: any): Promise<any> {
+    const [serviceName, methodName] = functionCall.name.split('-');
+
+    const serviceMap = {
+      JoanDeskHandlerService: this.joanDeskHandlerService,
+      // EmployeesService: this.employeesService,
+      // BufferMemoryService: this.bufferMemoryService,
+      // Add other service instances as needed
+    };
+
+    const service = serviceMap[serviceName];
+    if (!service || typeof service[methodName] !== 'function') {
+      throw new Error(`Service or method not found: ${functionCall.name}`);
+    }
+
+    return await service[methodName](functionCall);
   }
 }
