@@ -50,7 +50,10 @@ export class ThreadController {
       senderEmail,
       threadId: thread.id,
     });
-    return this.messageService.findChatMessagesByThreadId(thread.id);
+    return {
+      ...thread,
+      messages: await this.messageService.findChatMessagesByThreadId(thread.id),
+    };
   }
 
   @Get()

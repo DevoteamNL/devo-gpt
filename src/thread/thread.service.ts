@@ -113,8 +113,7 @@ export class ThreadService {
    * @returns A confirmation message.
    */
   async remove(id: number): Promise<string> {
-    // Implementation depends on your specific requirements
-    // Example: Delete the thread and return a confirmation message
-    throw new Error('Method not implemented.');
+    await this.threadRepository.softDelete(id);
+    return 'OK';
   }
 }

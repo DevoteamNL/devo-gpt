@@ -4,6 +4,7 @@ import {
   ManyToOne,
   OneToMany,
   Column,
+  DeleteDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Message } from '../../message/entities/message.entity';
@@ -22,4 +23,7 @@ export class Thread {
   // TODO: Add lazy loading to the messages property
   @OneToMany(() => Message, (message) => message.thread)
   messages: Message[];
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
