@@ -40,7 +40,7 @@ export class ThreadController {
 
     // Calling Model to get response
     const chatMessage = createThreadDto.message;
-    const senderName = 'Test Name';
+    const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
@@ -110,7 +110,7 @@ export class ThreadController {
       },
     });
     const chatMessage = messageContent.text;
-    const senderName = 'Test Name';
+    const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,

@@ -281,9 +281,6 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.bufferMemoryService.getMessages(senderEmail).length,
         );
         this.bufferMemoryService.addMessages(senderEmail, onlyNewMessages);
-        // Clear chat history
-        this.bufferMemoryService.deleteBufferEntry(senderEmail);
-
         return completionParkingReservation.choices[0].message;
       } else if (
         functionCall &&

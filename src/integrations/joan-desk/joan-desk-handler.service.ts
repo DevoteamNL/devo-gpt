@@ -43,10 +43,35 @@ export class JoanDeskHandlerService {
       };
     }
   }
+
+  private async postDeskReservationHandler(functionCall: FunctionCall) {
+    const { deskName, date, timeslot, userEmail } = JSON.parse(
+      functionCall.arguments,
+    );
+    try {
+      const reservationDesksResponse =
+        await this.joanDeskService.postDeskReservation(
+          userEmail,
+          deskName,
+          date,
+          timeslot,
+        );
+      return (
+        reservationDesksResponse.toString() +
+        '\n\n\n' +
+        'Respond with calculated date and day and full name like "Bar table #6", "Desk #1 - Dual Monitor"'
+      );
+    } catch (e) {
+      return {
+        content: 'Could not retrieve available desks.',
+      };
+    }
+  }
+
   public getFunctionDefinitions() {
     return [
       this.getAvailableDesksHandlerFD(),
-      // this.postDeskReservationHandlerFD(),
+      this.postDeskReservationHandlerFD(),
       // this.postParkingReservationHandlerFD(),
       // this.getParkingAvailabilityHandlerFD(),
       // this.getDeskReservationsHandlerFD(),
@@ -80,12 +105,17 @@ export class JoanDeskHandlerService {
   // Make desk reservation for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or full/all day)
   private postDeskReservationHandlerFD() {
     return {
-      name: 'postDeskReservation',
+      name: 'postDeskReservationHandler',
       description:
-        'Make desk reservation/booking for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or All day)',
+        'Make desk reservation/booking for Amsterdam office, based on userEmail, desk name and date timeslot (Morning, Afternoon or All day)',
       parameters: {
         type: 'object',
         properties: {
+          userEmail: {
+            type: 'string',
+            description:
+              'The email id of the user who is making reservation, sending message to bot',
+          },
           deskName: {
             type: 'string',
             description:
@@ -119,6 +149,11 @@ export class JoanDeskHandlerService {
       parameters: {
         type: 'object',
         properties: {
+          userEmail: {
+            type: 'string',
+            description:
+              'The email id of the user who is making reservation, sending message to bot',
+          },
           date: {
             type: 'string',
             description: 'The date in "YYYY-MM-DD" format',

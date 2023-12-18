@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Post, Request } from '@nestjs/common';
+import { Controller, Delete, Get, Logger, Post, Request } from '@nestjs/common';
 import { CognitiveSearchService } from '../cognitive-search/cognitive-search.service';
 import { OpenaiService } from '../openai/openai.service';
 import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
@@ -16,6 +16,17 @@ export class ChatController {
     private readonly joanDeskService: JoanDeskService,
     private readonly bufferMemoryService: BufferMemoryService,
   ) {}
+
+  // Following method delete controller endpoint
+  // deletes messages from buffer memory
+  @Delete()
+  async deleteChat(@Request() req) {
+    const senderEmail = req.body.message.sender.email;
+    const messageDeleteCnt =
+      this.bufferMemoryService.getUserMessageCount(senderEmail);
+    this.bufferMemoryService.deleteBufferEntry(senderEmail);
+    return 'Chat deleted, message count ' + messageDeleteCnt;
+  }
 
   // Following method Post controller endpoint
   // calls cognitive search service to retrive documents based on query passed in request body
