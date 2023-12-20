@@ -102,9 +102,10 @@ export class ThreadService {
    * @returns The updated thread.
    */
   async update(id: number, updateThreadDto: UpdateThreadDto): Promise<Thread> {
-    // Implementation depends on your specific requirements
-    // Example: Update thread data and return the updated thread
-    throw new Error('Method not implemented.');
+    await this.threadRepository.update(id, {
+      title: updateThreadDto.title,
+    });
+    return await this.findOne(id);
   }
 
   /**
