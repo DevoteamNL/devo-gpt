@@ -2,13 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ChatMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
-import {
-  executeFunction,
-  functionDefinitions,
-  getFunctionDefinition,
-  initializePlugins,
-} from 'src/plugins';
-import { ConfigService } from '@nestjs/config';
+import { PluginService } from 'src/plugin';
+
 @Injectable()
 export class OpenaiChatService {
   private readonly logger = new Logger(OpenaiChatService.name);
@@ -18,10 +13,8 @@ export class OpenaiChatService {
   constructor(
     private readonly messageService: MessageService,
     private readonly azureOpenAIClient: AzureOpenAIClientService,
-    configService: ConfigService,
-  ) {
-    initializePlugins(configService, this.logger);
-  }
+    private readonly pluginService: PluginService,
+  ) {}
 
   // Get the employees professional work experience details based on a given employee name or certificate name or skill name
 
@@ -63,7 +56,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         chatHistory,
         {
           temperature: 0.1,
-          functions: functionDefinitions(),
+          functions: this.pluginService.functionDefinitions,
         },
       );
       const initial_response = completion.choices[0].message;
@@ -78,12 +71,14 @@ If user just says Hi or how are you to start conversation, you can respond with 
       const functionCall = initial_response.functionCall;
       this.logger.log(`FUNCTION_CALLING: ${JSON.stringify(functionCall)}`);
       if (functionCall && functionCall.name) {
-        const function_response = await executeFunction(
+        const function_response = await this.pluginService.executeFunction(
           functionCall.name,
           functionCall.arguments,
           senderEmail,
         );
-        const calledFunction = getFunctionDefinition(functionCall.name);
+        const calledFunction = this.pluginService.findDefinition(
+          functionCall.name,
+        );
         // chatHistory.push({
         //   role: function_response.role,
         //   functionCall: {

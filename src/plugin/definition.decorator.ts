@@ -2,9 +2,7 @@ import { FunctionDefinition } from './types';
 
 export const definitions = [];
 
-export function functionDefinition(
-  definition: Omit<FunctionDefinition, 'name'>,
-) {
+export function Definition(definition: Omit<FunctionDefinition, 'name'>) {
   return function actualDecorator(
     targetPrototype: any,
     propertyKey: string,

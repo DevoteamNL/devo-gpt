@@ -8,6 +8,7 @@ import { UtilsModule } from '../utils/utils.module';
 import { OpenaiChatService } from './openai-chat.service';
 import { MessageModule } from '../message/message.module';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
+import { PluginModule } from 'src/plugin';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AzureOpenAIClientService } from './azure-openai-client.service';
     IntegrationsModule,
     UtilsModule,
     MessageModule,
+    PluginModule,
   ],
   providers: [OpenaiService, OpenaiChatService, AzureOpenAIClientService],
   exports: [OpenaiService, OpenaiChatService, AzureOpenAIClientService],

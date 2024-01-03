@@ -1,7 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 import moment from 'moment-timezone';
-import { ConfigService, LoggerService, Plugin } from './types';
-import { functionDefinition } from './function-definition.decorator';
+import { ConfigService } from '../types';
+import { Definition } from '../definition.decorator';
+import { Plugin } from '../plugin.decorator';
 
 interface Desk {
   id: string;
@@ -17,17 +18,14 @@ interface ParkingSpotOptions {
   timeslot?: string;
 }
 
-export class JoanPlugin extends Plugin {
+@Plugin
+export class JoanPlugin {
   private axiosInstance: AxiosInstance;
   private token: string | null = null;
   private tokenExpiration: Date | null = null;
   private readonly timeZone = 'Europe/Amsterdam';
 
-  constructor(
-    private readonly configService: ConfigService,
-    readonly loggerService: LoggerService,
-  ) {
-    super(configService, loggerService);
+  constructor(private readonly configService: ConfigService) {
     this.axiosInstance = axios.create({
       baseURL: 'https://portal.getjoan.com',
     });
@@ -93,7 +91,7 @@ export class JoanPlugin extends Plugin {
     }
   }
 
-  @functionDefinition({
+  @Definition({
     description:
       'This function provides a comprehensive summary of desk reservations in the Amsterdam office. ' +
       'It allows users to view details about desk reservations, ' +
@@ -191,7 +189,7 @@ export class JoanPlugin extends Plugin {
   // returns list of available desks
   // ...
 
-  @functionDefinition({
+  @Definition({
     description: 'Get available desks based on from and to date and time',
     parameters: {
       type: 'object',
@@ -249,7 +247,7 @@ export class JoanPlugin extends Plugin {
     }
   }
 
-  @functionDefinition({
+  @Definition({
     description:
       'Make desk reservation/booking for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or All day)',
     parameters: {
@@ -358,7 +356,7 @@ export class JoanPlugin extends Plugin {
     return deskSlotsResponse.find((s) => s.name === timeslot && s.active);
   }
 
-  @functionDefinition({
+  @Definition({
     description:
       ' for Amsterdam office, Get parking reservation information such as summary, availability' +
       ' Such as which parking spots are available and which parking spots are reserved and by whom,' +
@@ -479,7 +477,7 @@ export class JoanPlugin extends Plugin {
     }
   }
 
-  @functionDefinition({
+  @Definition({
     description:
       'Make parking/parking spot reservation/booking for Amsterdam office, based on date and timeslot (Morning, Afternoon or All day)',
     parameters: {

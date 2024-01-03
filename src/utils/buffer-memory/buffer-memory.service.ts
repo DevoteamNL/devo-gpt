@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ChatMessage } from '@azure/openai';
+import { ChatMessage, FunctionDefinition } from '@azure/openai';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { FunctionDefinition } from 'src/plugins';
 
 @Injectable()
 export class BufferMemoryService {
@@ -120,7 +119,6 @@ export class BufferMemoryService {
         type: 'object',
         properties: {},
       },
-      followUpPrompt: '',
     };
   }
 }
