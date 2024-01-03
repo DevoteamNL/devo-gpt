@@ -2,29 +2,25 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ChatMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
-import { FunctionDefinition, plugins } from 'src/plugins';
+import {
+  executeFunction,
+  functionDefinitions,
+  getFunctionDefinition,
+  initializePlugins,
+} from 'src/plugins';
 import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class OpenaiChatService {
   private readonly logger = new Logger(OpenaiChatService.name);
   private readonly gpt35Deployment = 'gpt-35-turbo';
   private readonly gpt4Deployment = 'gpt-4';
-  private readonly plugins = [];
 
   constructor(
     private readonly messageService: MessageService,
     private readonly azureOpenAIClient: AzureOpenAIClientService,
     configService: ConfigService,
   ) {
-    this.plugins = Object.values(plugins).map(
-      (plugin) => new plugin(configService, this.logger),
-    );
-  }
-
-  public getFunctionDefinitions(): FunctionDefinition[] {
-    return [
-      ...this.plugins.flatMap((plugin) => plugin.getFunctionDefinitions()),
-    ];
+    initializePlugins(configService, this.logger);
   }
 
   // Get the employees professional work experience details based on a given employee name or certificate name or skill name
@@ -33,8 +29,6 @@ export class OpenaiChatService {
   //Query message from user
   //funiton informatin
   async getChatResponse({ senderName, senderEmail, threadId }) {
-    const functions: FunctionDefinition[] = this.getFunctionDefinitions();
-
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
       threadId,
@@ -69,7 +63,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         chatHistory,
         {
           temperature: 0.1,
-          functions: [...functions],
+          functions: functionDefinitions(),
         },
       );
       const initial_response = completion.choices[0].message;
@@ -84,13 +78,12 @@ If user just says Hi or how are you to start conversation, you can respond with 
       const functionCall = initial_response.functionCall;
       this.logger.log(`FUNCTION_CALLING: ${JSON.stringify(functionCall)}`);
       if (functionCall && functionCall.name) {
-        const function_response = await this.executeFunction(
-          functionCall,
+        const function_response = await executeFunction(
+          functionCall.name,
+          functionCall.arguments,
           senderEmail,
-        )[0];
-        const calledFunction = functions.find(
-          (f) => f.name === functionCall.name,
         );
+        const calledFunction = getFunctionDefinition(functionCall.name);
         // chatHistory.push({
         //   role: function_response.role,
         //   functionCall: {
@@ -136,20 +129,5 @@ If user just says Hi or how are you to start conversation, you can respond with 
       this.logger.log(error);
       throw error;
     }
-  }
-
-  public async executeFunction(
-    functionCall: any,
-    senderEmail: string,
-  ): Promise<any> {
-    return await Promise.all(
-      this.plugins.map((plugin) =>
-        plugin.executeFunction(
-          functionCall.name,
-          functionCall.arguments,
-          senderEmail,
-        ),
-      ),
-    );
   }
 }

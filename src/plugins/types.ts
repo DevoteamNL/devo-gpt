@@ -17,10 +17,4 @@ export type FunctionDefinition = FunctionDefinitionType & {
 export abstract class Plugin {
   // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
   constructor(_configService: ConfigService, _loggerService: LoggerService) {}
-  abstract getFunctionDefinitions(): FunctionDefinition[];
-  abstract executeFunction(
-    name: string,
-    args: string,
-    senderEmail: string,
-  ): Promise<string>;
 }

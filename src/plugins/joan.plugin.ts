@@ -1,11 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import moment from 'moment-timezone';
-import {
-  ConfigService,
-  FunctionDefinition,
-  LoggerService,
-  Plugin,
-} from './types';
+import { ConfigService, LoggerService, Plugin } from './types';
+import { functionDefinition } from './function-definition.decorator';
 
 interface Desk {
   id: string;
@@ -97,6 +93,51 @@ export class JoanPlugin extends Plugin {
     }
   }
 
+  @functionDefinition({
+    description:
+      'This function provides a comprehensive summary of desk reservations in the Amsterdam office. ' +
+      'It allows users to view details about desk reservations, ' +
+      'including who has reserved which desk and the specific times of these reservations. ' +
+      'This information is based on selected start and end dates and times. ' +
+      'Users can inquire about their own desk reservations or find out who else has made a reservation for a particular day. ' +
+      'For example, a user can check if they have a desk reserved for Thursday, ' +
+      'get a list of people with reservations for tomorrow, or ' +
+      'find out who has a desk reservation for the next day ' +
+      'if there is desk reservation that means user is going to come to office that day',
+    parameters: {
+      type: 'object',
+      properties: {
+        start_date: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        end_date: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        start_time: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        end_time: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+      },
+      required: ['start_date', 'end_date'],
+    },
+
+    followUpPrompt:
+      'Below information is in CSV format, It is desk reservation details by all employee.' +
+      '\nIf there is desk reservation by a user, that means that user is going to come to office that day.' +
+      // '\n\n If use asked if he has desk reservation? you can check above data to see if user has any reservations' +
+      // '\n\n User can also ask who has desk reservations? then you can provide him details of each user and their desk name' +
+      '\nTry to include calculated date and day name in response, and keep answer as concise as possible, as short as possible.' +
+      '\n\n\n' +
+      'Desk Name,Reservation Start,Reservation end,Employee Name(Reserved By),Employee Email\n',
+    followUpTemperature: 0.7,
+    followUpModel: 'gpt-35-turbo-16k',
+  })
   private async getDeskReservations({
     start_date,
     end_date,
@@ -150,6 +191,29 @@ export class JoanPlugin extends Plugin {
   // returns list of available desks
   // ...
 
+  @functionDefinition({
+    description: 'Get available desks based on from and to date and time',
+    parameters: {
+      type: 'object',
+      properties: {
+        from: {
+          type: 'string',
+          description:
+            'The Start date ("From") of interested time window in RFC3339 format',
+        },
+        to: {
+          type: 'string',
+          description:
+            'The Start date ("To") of interested time window in RFC3339 format',
+        },
+      },
+      required: ['from', 'to'],
+    },
+
+    followUpPrompt:
+      'Respond with calculated date and day and concise/short answer as possible with desk names, Such as available desk are "High table #3", "From High table #6 to High table #13" ' +
+      '\n\n\n',
+  })
   private async getAvailableDesks({
     from,
     to,
@@ -185,7 +249,38 @@ export class JoanPlugin extends Plugin {
     }
   }
 
-  // Make desk reservation for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or full/all day)
+  @functionDefinition({
+    description:
+      'Make desk reservation/booking for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or All day)',
+    parameters: {
+      type: 'object',
+      properties: {
+        deskName: {
+          type: 'string',
+          description:
+            'Desk name, expected values are From "High table #1" to "High table #13",\n' +
+            'From "Single Monitor - Desk #1" to "Single Monitor - Desk #9",\n' +
+            'From "Desk #1 - Dual Monitor" to "Desk #24 - Dual Monitor",\n' +
+            'From "Bar table #1" to "Bar table #6",\n' +
+            'From "Lounge #1" to "Lounge #3",\n' +
+            'From "Round table #1" to "Round table #3",',
+        },
+        date: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        timeslot: {
+          type: 'string',
+          description:
+            'Expected values: "Morning", "Afternoon" or "All day". default is All day',
+        },
+      },
+      required: ['deskName', 'date', 'timeslot'],
+    },
+    followUpPrompt:
+      'Respond with calculated date and day and full name like "Bar table #6", "Desk #1 - Dual Monitor"' +
+      '\n\n\n',
+  })
   private async postDeskReservation({
     email,
     deskName,
@@ -263,6 +358,39 @@ export class JoanPlugin extends Plugin {
     return deskSlotsResponse.find((s) => s.name === timeslot && s.active);
   }
 
+  @functionDefinition({
+    description:
+      ' for Amsterdam office, Get parking reservation information such as summary, availability' +
+      ' Such as which parking spots are available and which parking spots are reserved and by whom,' +
+      ' based on date and timeslot (Morning, Afternoon or All day)' +
+      ' User can ask for available parking spots and parking spots reserved by themselves or someone else' +
+      ' For Example: Check if I have reservation for Thursday,  give me names of people who has reservation for tomorrow',
+    parameters: {
+      type: 'object',
+      properties: {
+        date: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        timeslot: {
+          type: 'string',
+          description:
+            'Expected values: "Morning", "Afternoon" or "All day". default is All day',
+        },
+      },
+      required: ['date', 'timeslot'],
+    },
+
+    followUpPrompt:
+      'Below information is parking reservation details in CSV format' +
+      '\n If use asked if he has parking? you can check above data to see if user has any reservations' +
+      '\n User can also ask who has parking reservations? then you can provide him details of each user and their parking number' +
+      'Try to include calculated date and day name in response.' +
+      '\n\n\n' +
+      'Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)\n',
+    followUpTemperature: 0.3,
+    followUpModel: 'gpt-35-turbo-16k',
+  })
   private async getAvailableParkingSpots(options: ParkingSpotOptions) {
     try {
       let { start, end } = options;
@@ -351,6 +479,34 @@ export class JoanPlugin extends Plugin {
     }
   }
 
+  @functionDefinition({
+    description:
+      'Make parking/parking spot reservation/booking for Amsterdam office, based on date and timeslot (Morning, Afternoon or All day)',
+    parameters: {
+      type: 'object',
+      properties: {
+        date: {
+          type: 'string',
+          description: 'The date in "YYYY-MM-DD" format',
+        },
+        timeslot: {
+          type: 'string',
+          description:
+            'Expected values: "Morning", "Afternoon" or "All day". default is All day',
+        },
+      },
+      required: ['date', 'timeslot'],
+    },
+
+    followUpPrompt:
+      'Respond based on user message like parking spot summary, availability, or parking reservation details ' +
+      'and also included calculated date and day in response' +
+      'Example query can be: do I have parking reservation for tomorrow?, give me names of people who has reservation for tomorrow\n\n\n' +
+      'You may ask follow up question if user wants to reserve desk also' +
+      '\n\n\n',
+    followUpTemperature: 0.3,
+    clearAfterExecution: true,
+  })
   private async postParkingReservation({
     email,
     date,
@@ -408,219 +564,5 @@ export class JoanPlugin extends Plugin {
           `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
       )
       .join('&');
-  }
-
-  public async executeFunction(
-    functionName: string,
-    params: string,
-    senderEmail: string,
-  ): Promise<string> {
-    const parameters = { ...JSON.parse(params), email: senderEmail };
-    switch (functionName) {
-      case 'getAvailableDesks':
-        return await this.getAvailableDesks(parameters);
-      case 'postDeskReservation':
-        return await this.postDeskReservation(parameters);
-      case 'postParkingReservationHandler':
-        return await this.postParkingReservation(parameters);
-      case 'getParkingAvailabilityHandler':
-        return await this.getAvailableParkingSpots(parameters);
-      case 'getDeskReservationsHandler':
-        return await this.getDeskReservations(parameters);
-      default:
-        throw new Error(`Function ${functionName} not found`);
-    }
-  }
-
-  public getFunctionDefinitions() {
-    return [
-      this.getAvailableDesksHandlerFunctionDefinition(),
-      this.postDeskReservationHandlerFunctionDefinition(),
-      this.postParkingReservationHandlerFunctionDefinition(),
-      this.getParkingAvailabilityHandlerFunctionDefinition(),
-      this.getDeskReservationsHandlerFunctionDefinition(),
-    ];
-  }
-
-  private getAvailableDesksHandlerFunctionDefinition(): FunctionDefinition {
-    return {
-      name: 'getAvailableDesks',
-      description: 'Get available desks based on from and to date and time',
-      parameters: {
-        type: 'object',
-        properties: {
-          from: {
-            type: 'string',
-            description:
-              'The Start date ("From") of interested time window in RFC3339 format',
-          },
-          to: {
-            type: 'string',
-            description:
-              'The Start date ("To") of interested time window in RFC3339 format',
-          },
-        },
-        required: ['from', 'to'],
-      },
-
-      followUpPrompt:
-        'Respond with calculated date and day and concise/short answer as possible with desk names, Such as available desk are "High table #3", "From High table #6 to High table #13" ' +
-        '\n\n\n',
-    };
-  }
-
-  // Make desk reservation for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or full/all day)
-  private postDeskReservationHandlerFunctionDefinition(): FunctionDefinition {
-    return {
-      name: 'postDeskReservation',
-      description:
-        'Make desk reservation/booking for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or All day)',
-      parameters: {
-        type: 'object',
-        properties: {
-          deskName: {
-            type: 'string',
-            description:
-              'Desk name, expected values are From "High table #1" to "High table #13",\n' +
-              'From "Single Monitor - Desk #1" to "Single Monitor - Desk #9",\n' +
-              'From "Desk #1 - Dual Monitor" to "Desk #24 - Dual Monitor",\n' +
-              'From "Bar table #1" to "Bar table #6",\n' +
-              'From "Lounge #1" to "Lounge #3",\n' +
-              'From "Round table #1" to "Round table #3",',
-          },
-          date: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          timeslot: {
-            type: 'string',
-            description:
-              'Expected values: "Morning", "Afternoon" or "All day". default is All day',
-          },
-        },
-        required: ['deskName', 'date', 'timeslot'],
-      },
-      followUpPrompt:
-        'Respond with calculated date and day and full name like "Bar table #6", "Desk #1 - Dual Monitor"' +
-        '\n\n\n',
-    };
-  }
-
-  private postParkingReservationHandlerFunctionDefinition(): FunctionDefinition {
-    return {
-      name: 'postParkingReservationHandler',
-      description:
-        'Make parking/parking spot reservation/booking for Amsterdam office, based on date and timeslot (Morning, Afternoon or All day)',
-      parameters: {
-        type: 'object',
-        properties: {
-          date: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          timeslot: {
-            type: 'string',
-            description:
-              'Expected values: "Morning", "Afternoon" or "All day". default is All day',
-          },
-        },
-        required: ['date', 'timeslot'],
-      },
-
-      followUpPrompt:
-        'Respond based on user message like parking spot summary, availability, or parking reservation details ' +
-        'and also included calculated date and day in response' +
-        'Example query can be: do I have parking reservation for tomorrow?, give me names of people who has reservation for tomorrow\n\n\n' +
-        'You may ask follow up question if user wants to reserve desk also' +
-        '\n\n\n',
-      followUpTemperature: 0.3,
-      clearAfterExecution: true,
-    };
-  }
-
-  private getParkingAvailabilityHandlerFunctionDefinition(): FunctionDefinition {
-    return {
-      name: 'getParkingAvailabilityHandler',
-      description:
-        ' for Amsterdam office, Get parking reservation information such as summary, availability' +
-        ' Such as which parking spots are available and which parking spots are reserved and by whom,' +
-        ' based on date and timeslot (Morning, Afternoon or All day)' +
-        ' User can ask for available parking spots and parking spots reserved by themselves or someone else' +
-        ' For Example: Check if I have reservation for Thursday,  give me names of people who has reservation for tomorrow',
-      parameters: {
-        type: 'object',
-        properties: {
-          date: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          timeslot: {
-            type: 'string',
-            description:
-              'Expected values: "Morning", "Afternoon" or "All day". default is All day',
-          },
-        },
-        required: ['date', 'timeslot'],
-      },
-
-      followUpPrompt:
-        'Below information is parking reservation details in CSV format' +
-        '\n If use asked if he has parking? you can check above data to see if user has any reservations' +
-        '\n User can also ask who has parking reservations? then you can provide him details of each user and their parking number' +
-        'Try to include calculated date and day name in response.' +
-        '\n\n\n' +
-        'Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)\n',
-      followUpTemperature: 0.3,
-      followUpModel: 'gpt-35-turbo-16k',
-    };
-  }
-
-  private getDeskReservationsHandlerFunctionDefinition(): FunctionDefinition {
-    return {
-      name: 'getDeskReservationsHandler',
-      description:
-        'This function provides a comprehensive summary of desk reservations in the Amsterdam office. ' +
-        'It allows users to view details about desk reservations, ' +
-        'including who has reserved which desk and the specific times of these reservations. ' +
-        'This information is based on selected start and end dates and times. ' +
-        'Users can inquire about their own desk reservations or find out who else has made a reservation for a particular day. ' +
-        'For example, a user can check if they have a desk reserved for Thursday, ' +
-        'get a list of people with reservations for tomorrow, or ' +
-        'find out who has a desk reservation for the next day ' +
-        'if there is desk reservation that means user is going to come to office that day',
-      parameters: {
-        type: 'object',
-        properties: {
-          start_date: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          end_date: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          start_time: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-          end_time: {
-            type: 'string',
-            description: 'The date in "YYYY-MM-DD" format',
-          },
-        },
-        required: ['start_date', 'end_date'],
-      },
-
-      followUpPrompt:
-        'Below information is in CSV format, It is desk reservation details by all employee.' +
-        '\nIf there is desk reservation by a user, that means that user is going to come to office that day.' +
-        // '\n\n If use asked if he has desk reservation? you can check above data to see if user has any reservations' +
-        // '\n\n User can also ask who has desk reservations? then you can provide him details of each user and their desk name' +
-        '\nTry to include calculated date and day name in response, and keep answer as concise as possible, as short as possible.' +
-        '\n\n\n' +
-        'Desk Name,Reservation Start,Reservation end,Employee Name(Reserved By),Employee Email\n',
-      followUpTemperature: 0.7,
-      followUpModel: 'gpt-35-turbo-16k',
-    };
   }
 }
