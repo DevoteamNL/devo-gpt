@@ -1,37 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ChatMessage, FunctionDefinition } from '@azure/openai';
+import { ChatMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
-import { JoanDeskHandlerService } from '../integrations/joan-desk/joan-desk-handler.service';
+import { PluginService } from 'src/plugin';
 
 @Injectable()
 export class OpenaiChatService {
   private readonly logger = new Logger(OpenaiChatService.name);
-  private readonly gpt35t16kDeployment = 'gpt-35-turbo-16k';
   private readonly gpt35Deployment = 'gpt-35-turbo';
   private readonly gpt4Deployment = 'gpt-4';
-  private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
     private readonly messageService: MessageService,
     private readonly azureOpenAIClient: AzureOpenAIClientService,
-    private readonly joanDeskHandlerService: JoanDeskHandlerService,
+    private readonly pluginService: PluginService,
   ) {}
-
-  public getFunctionDefinitions(): FunctionDefinition[] {
-    return [
-      ...this.getServiceFunctions(
-        this.joanDeskHandlerService,
-        'JoanDeskHandlerService',
-      ),
-      // ...this.getServiceFunctions(this.employeesService, 'EmployeesService'),
-      // ...this.getServiceFunctions(
-      //   this.bufferMemoryService,
-      //   'BufferMemoryService',
-      // ),
-      // Add other services as needed
-    ];
-  }
 
   // Get the employees professional work experience details based on a given employee name or certificate name or skill name
 
@@ -39,8 +22,6 @@ export class OpenaiChatService {
   //Query message from user
   //funiton informatin
   async getChatResponse({ senderName, senderEmail, threadId }) {
-    const functions: FunctionDefinition[] = this.getFunctionDefinitions();
-
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
       threadId,
@@ -75,7 +56,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         chatHistory,
         {
           temperature: 0.1,
-          functions: [...functions],
+          functions: this.pluginService.functionDefinitions,
         },
       );
       const initial_response = completion.choices[0].message;
@@ -90,7 +71,14 @@ If user just says Hi or how are you to start conversation, you can respond with 
       const functionCall = initial_response.functionCall;
       this.logger.log(`FUNCTION_CALLING: ${JSON.stringify(functionCall)}`);
       if (functionCall && functionCall.name) {
-        const function_response = await this.executeFunction(functionCall);
+        const function_response = await this.pluginService.executeFunction(
+          functionCall.name,
+          functionCall.arguments,
+          senderEmail,
+        );
+        const calledFunction = this.pluginService.findDefinition(
+          functionCall.name,
+        );
         // chatHistory.push({
         //   role: function_response.role,
         //   functionCall: {
@@ -102,23 +90,24 @@ If user just says Hi or how are you to start conversation, you can respond with 
         chatHistory.push({
           role: 'function',
           name: functionCall.name,
-          content: function_response.toString(),
+          content: function_response.toString() + calledFunction.followUpPrompt,
         });
         await this.messageService.create({
           threadId,
           data: {
             role: 'function',
             name: functionCall.name,
-            content: function_response.toString(),
+            content:
+              function_response.toString() + calledFunction.followUpPrompt,
           },
         });
         this.logger.debug(`########`);
         this.logger.debug(chatHistory);
         const final_completion =
           await this.azureOpenAIClient.getChatCompletions(
-            this.gpt35Deployment,
+            calledFunction.followUpModel || this.gpt35Deployment,
             chatHistory,
-            { temperature: 0 },
+            { temperature: calledFunction.followUpTemperature || 0 },
           );
         const final_response: ChatMessage = final_completion.choices[0].message;
         this.logger.log(`final_response Response:`);
@@ -135,37 +124,5 @@ If user just says Hi or how are you to start conversation, you can respond with 
       this.logger.log(error);
       throw error;
     }
-  }
-
-  private getServiceFunctions(
-    service: any,
-    serviceName: string,
-  ): FunctionDefinition[] {
-    return service
-      .getFunctionDefinitions()
-      .map((funcDef: FunctionDefinition) => {
-        return {
-          ...funcDef,
-          name: `${serviceName}-${funcDef.name}`,
-        };
-      });
-  }
-
-  public async executeFunction(functionCall: any): Promise<any> {
-    const [serviceName, methodName] = functionCall.name.split('-');
-
-    const serviceMap = {
-      JoanDeskHandlerService: this.joanDeskHandlerService,
-      // EmployeesService: this.employeesService,
-      // BufferMemoryService: this.bufferMemoryService,
-      // Add other service instances as needed
-    };
-
-    const service = serviceMap[serviceName];
-    if (!service || typeof service[methodName] !== 'function') {
-      throw new Error(`Service or method not found: ${functionCall.name}`);
-    }
-
-    return await service[methodName](functionCall);
   }
 }
