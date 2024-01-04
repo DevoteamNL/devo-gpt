@@ -18,7 +18,7 @@ interface ParkingSpotOptions {
   timeslot?: string;
 }
 
-@Plugin
+@Plugin({ displayName: 'Joan' })
 export class JoanPlugin {
   private axiosInstance: AxiosInstance;
   private token: string | null = null;

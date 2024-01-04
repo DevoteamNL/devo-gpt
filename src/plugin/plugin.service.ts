@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { definitions } from './definition.decorator';
-import { findPlugin } from './plugin.decorator';
+import { findPlugin, pluginsByDisplayName } from './plugin.decorator';
 import './plugins/joan.plugin';
 import { initializePlugins } from './plugin.decorator';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +13,13 @@ export class PluginService {
 
   public get functionDefinitions() {
     return definitions;
+  }
+
+  public get availablePlugins() {
+    return Object.entries(pluginsByDisplayName()).map(([name, plugin]) => ({
+      displayName: name,
+      name: plugin.name,
+    }));
   }
 
   public findDefinition(functionName: string) {

@@ -1,6 +1,6 @@
 import { FunctionDefinition } from './types';
 
-export const definitions = [];
+export const definitions: FunctionDefinition[] = [];
 
 export function Definition(definition: Omit<FunctionDefinition, 'name'>) {
   return function actualDecorator(

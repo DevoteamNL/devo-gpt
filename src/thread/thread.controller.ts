@@ -49,6 +49,7 @@ export class ThreadController {
       senderName,
       senderEmail,
       threadId: thread.id,
+      plugin: thread.plugin,
     });
     return {
       ...thread,
@@ -109,6 +110,8 @@ export class ThreadController {
         content: messageContent.text,
       },
     });
+
+    const thread = await this.threadService.findOne(+threadId);
     const chatMessage = messageContent.text;
     const senderName = req.user.name;
     const senderEmail = req.user.username;
@@ -119,6 +122,7 @@ export class ThreadController {
       senderName,
       senderEmail,
       threadId,
+      plugin: thread.plugin,
     });
   }
 }
