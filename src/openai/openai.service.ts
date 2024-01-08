@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ChatMessage, FunctionDefinition } from '@azure/openai';
 import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
 import { EmployeesService } from '../employees/employees.service';
@@ -12,7 +11,7 @@ export class OpenaiService {
   private readonly gpt35t16kDeployment = 'gpt-35-turbo-16k';
   private readonly gpt35Deployment = 'gpt-35-turbo';
   private readonly gpt4Deployment = 'gpt-4';
-  private readonly gpt432kDeployment = 'gpt-4-32k';
+  // private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
     private readonly joanDeskService: JoanDeskService,
@@ -231,7 +230,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
       ) {
         this.logger.log(`postParkingReservationHandler`);
         this.logger.log(functionCall.arguments);
-        let parkingReservationResponse = '';
+        let parkingReservationResponse: string;
         try {
           const { date, timeslot } = JSON.parse(functionCall.arguments); // Assuming functionCall.params contains the necessary parameters
 
@@ -281,9 +280,6 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.bufferMemoryService.getMessages(senderEmail).length,
         );
         this.bufferMemoryService.addMessages(senderEmail, onlyNewMessages);
-        // Clear chat history
-        this.bufferMemoryService.deleteBufferEntry(senderEmail);
-
         return completionParkingReservation.choices[0].message;
       } else if (
         functionCall &&

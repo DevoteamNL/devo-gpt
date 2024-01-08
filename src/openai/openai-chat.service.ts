@@ -28,12 +28,11 @@ export class OpenaiChatService {
     );
 
     try {
-      if (chatHistory.length === 1) {
-        // Initialize chat session with System message
-        // Generic prompt engineering
-        const systemMessage: ChatMessage = {
-          role: 'system',
-          content: `Current Date and Time is ${new Date().toISOString()}.
+      // Initialize chat session with System message
+      // Generic prompt engineering
+      const systemMessage: ChatMessage = {
+        role: 'system',
+        content: `Current Date and Time is ${new Date().toISOString()}.
 User's name is ${senderName} and user's emailID is ${senderEmail}.
  
 You are a AI assistant who helps with ONLY topics that you can find in function callings.
@@ -47,9 +46,8 @@ You can personalize response, use users name or emojis and make it little less p
 But remember you are still in professional environment, so don't get too personal.
 Keep answer as short as possible, very short please. few statements or even single if you can do it.
 If user just says Hi or how are you to start conversation, you can respond with greetings and what you can do for them.`,
-        };
-        chatHistory.unshift(systemMessage);
-      }
+      };
+      chatHistory.unshift(systemMessage);
       this.logger.log(`CHAT_HISTORY: ${JSON.stringify(chatHistory)}`);
       const completion = await this.azureOpenAIClient.getChatCompletions(
         this.gpt4Deployment,
