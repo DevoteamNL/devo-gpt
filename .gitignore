@@ -107,7 +107,6 @@ dist
 
 # Azure deployment file
 .azure
-/src/config/devoteamnl-park-app.json
 
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

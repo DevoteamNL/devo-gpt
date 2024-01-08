@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
-import { SheetsService } from './sheets/sheets.service';
 import { OpenaiService } from './openai/openai.service';
 import { GoogledriveService } from './googledrive/googledrive.service';
 
@@ -18,13 +17,13 @@ export class AppController {
 
   constructor(
     private readonly appService: AppService,
-    private readonly sheetsService: SheetsService,
     private readonly openaiService: OpenaiService,
     private readonly googledriveService: GoogledriveService,
   ) {}
 
   @Get()
   getHello(): string {
+    this.logger.log('Hello World!');
     return this.appService.getHello();
   }
 
@@ -42,12 +41,6 @@ export class AppController {
   //
   //   return { text: chatGPTResponse.content };
   // }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('sheets')
-  getSheets(@Request() req): Promise<any> {
-    return this.sheetsService.getContent(req.user.id, 15, 0);
-  }
 
   @UseGuards(JwtAuthGuard)
   @Post('upload')
