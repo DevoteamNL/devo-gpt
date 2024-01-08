@@ -21,7 +21,7 @@ export class OpenaiChatService {
   //system message
   //Query message from user
   //funiton informatin
-  async getChatResponse({ senderName, senderEmail, threadId }) {
+  async getChatResponse({ senderName, senderEmail, threadId, plugin }) {
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
       threadId,
@@ -56,7 +56,9 @@ If user just says Hi or how are you to start conversation, you can respond with 
         chatHistory,
         {
           temperature: 0.1,
-          functions: this.pluginService.functionDefinitions,
+          functions: this.pluginService.functionDefinitions.filter(
+            (f) => !plugin || f.name.startsWith(plugin + '-'),
+          ),
         },
       );
       const initial_response = completion.choices[0].message;

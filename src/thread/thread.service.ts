@@ -32,6 +32,7 @@ export class ThreadService {
       const thread = this.threadRepository.create({
         title: createThreadDto.title,
         user: createThreadDto.user,
+        plugin: createThreadDto.plugin,
       });
       const savedThread = await this.threadRepository.save(thread);
 

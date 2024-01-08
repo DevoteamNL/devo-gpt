@@ -26,4 +26,7 @@ export class Thread {
 
   @DeleteDateColumn()
   deletedAt?: Date;
+
+  @Column({ nullable: true })
+  plugin: string;
 }

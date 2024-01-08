@@ -4,4 +4,5 @@ export class CreateThreadDto {
   title: string;
   user: User;
   message: string;
+  plugin: string;
 }
