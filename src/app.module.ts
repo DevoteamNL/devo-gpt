@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { SheetsModule } from './sheets/sheets.module';
 import { CommunicationsService } from './communications/communications.service';
 import { CommunicationsModule } from './communications/communications.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -43,7 +42,6 @@ const ENV = process.env.NODE_ENV;
       autoLoadEntities: true,
     }),
     UsersModule,
-    SheetsModule,
     CommunicationsModule,
     ScheduleModule.forRoot(),
     OpenaiModule,
