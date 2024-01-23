@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Thread } from '../../thread/entities/thread.entity';
+import { Feedback } from '../feedback/entities/feedback.entity';
 
 @Entity()
 export class Message {
@@ -11,4 +18,7 @@ export class Message {
 
   @Column('jsonb')
   data: any; // JSON content of the message
+
+  @OneToMany(() => Feedback, (feedback) => feedback.message)
+  feedbacks: Feedback[];
 }
