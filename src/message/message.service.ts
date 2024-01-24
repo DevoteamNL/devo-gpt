@@ -1,9 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './entities/message.entity';
 import { Thread } from '../thread/entities/thread.entity';
-import { In, Not, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatMessage } from '@azure/openai';
 
@@ -19,7 +19,7 @@ export class MessageService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} message`;
+    return this.messageRepository.findOneBy({ id });
   }
 
   update(id: number, updateMessageDto: UpdateMessageDto) {
