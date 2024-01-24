@@ -253,6 +253,11 @@ export class JoanPlugin {
     parameters: {
       type: 'object',
       properties: {
+        email: {
+          type: 'string',
+          description:
+            'The email id of the user who is making reservation, sending message to bot',
+        },
         deskName: {
           type: 'string',
           description:
@@ -483,6 +488,11 @@ export class JoanPlugin {
     parameters: {
       type: 'object',
       properties: {
+        email: {
+          type: 'string',
+          description:
+            'The email id of the user who is making reservation, sending message to bot',
+        },
         date: {
           type: 'string',
           description: 'The date in "YYYY-MM-DD" format',
