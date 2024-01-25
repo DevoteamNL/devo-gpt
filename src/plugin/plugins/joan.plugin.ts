@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import { ConfigService } from '../types';
 import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
+import { Logger } from '@nestjs/common';
 
 interface Desk {
   id: string;
@@ -24,6 +25,9 @@ export class JoanPlugin {
   private token: string | null = null;
   private tokenExpiration: Date | null = null;
   private readonly timeZone = 'Europe/Amsterdam';
+  private static readonly QUERY_PARAMS_SLOTS = { limit: '1000' };
+  private static readonly API_ENDPOINT_BASE = '/api/2.0/desk/slots/';
+  private readonly logger = new Logger(JoanPlugin.name);
 
   constructor(private readonly configService: ConfigService) {
     this.axiosInstance = axios.create({
@@ -350,15 +354,24 @@ export class JoanPlugin {
     }
   }
 
-  private async getStartAndEnd(timeslot: string) {
-    const query_params_slots = {
-      limit: '1000',
-    };
-    const endpoint_slots = `/api/2.0/desk/slots/?${this.getQueryString(
-      query_params_slots,
-    )}`;
-    const deskSlotsResponse = await this.handleRequest(endpoint_slots);
-    return deskSlotsResponse.find((s) => s.name === timeslot && s.active);
+  private async getTimeslotDetails(timeslotName: string) {
+    const endpoint = this.buildSlotsEndpoint();
+    let deskSlotsResponse;
+    try {
+      deskSlotsResponse = await this.handleRequest(endpoint);
+    } catch (error) {
+      this.logger.error('Error fetching timeslots:', error);
+      return null;
+    }
+
+    return deskSlotsResponse.find(
+      (slot) => slot.name === timeslotName && slot.active,
+    );
+  }
+
+  private buildSlotsEndpoint(): string {
+    const queryString = this.getQueryString(JoanPlugin.QUERY_PARAMS_SLOTS);
+    return `${JoanPlugin.API_ENDPOINT_BASE}?${queryString}`;
   }
 
   @Definition({
@@ -385,12 +398,12 @@ export class JoanPlugin {
     },
 
     followUpPrompt:
-      'Below information is parking reservation details in CSV format' +
+      '\n\nAbove information is parking reservation details in CSV format' +
+      'Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)\n' +
       '\n If use asked if he has parking? you can check above data to see if user has any reservations' +
       '\n User can also ask who has parking reservations? then you can provide him details of each user and their parking number' +
       'Try to include calculated date and day name in response.' +
-      '\n\n\n' +
-      'Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)\n',
+      '\n\n\n',
     followUpTemperature: 0.3,
     followUpModel: 'gpt-35-turbo-16k',
   })
@@ -412,7 +425,7 @@ export class JoanPlugin {
       // Calculate start and end if not provided
       if (!start || !end) {
         if (date && timeslot) {
-          const slot = await this.getStartAndEnd(timeslot);
+          const slot = await this.getTimeslotDetails(timeslot);
           start = moment.tz(`${date} ${slot.from}`, this.timeZone).format();
           end = moment.tz(`${date} ${slot.to}`, this.timeZone).format();
         } else {
@@ -447,34 +460,32 @@ export class JoanPlugin {
       });
 
       // Mapping results to the desired format
-      return filteredResults
-        .map((parkingSpot: any) => {
-          const reservationStatus =
-            parkingSpot.schedule.length === 0 ? 'Available' : 'Reserved';
-          const reservedBy =
-            parkingSpot.schedule.length === 0
-              ? null
-              : parkingSpot.schedule[0].reservations
-                  .map(
-                    (reservation: any) =>
-                      `${reservation.user.first_name} ${reservation.user.last_name}`,
-                  )
-                  .join(', '); // Handling multiple reservations
+      return filteredResults.map((parkingSpot: any) => {
+        const reservationStatus =
+          parkingSpot.schedule.length === 0 ? 'Available' : 'Reserved';
+        const reservedBy =
+          parkingSpot.schedule.length === 0
+            ? null
+            : parkingSpot.schedule[0].reservations
+                .map(
+                  (reservation: any) =>
+                    `${reservation.user.first_name} ${reservation.user.last_name}`,
+                )
+                .join(', '); // Handling multiple reservations
 
-          return {
-            id: parkingSpot.id,
-            name: parkingSpot.name,
-            reservationStatus,
-            reservedBy,
-            toString: function () {
-              // Construct the string with available properties, omitting 'reserved by' if not applicable
-              return `${this.name}, ${this.reservationStatus}${
-                this.reservedBy ? `, ${this.reservedBy}` : ''
-              }`;
-            },
-          };
-        })
-        .toString();
+        return {
+          id: parkingSpot.id,
+          name: parkingSpot.name,
+          reservationStatus,
+          reservedBy,
+          toString: function () {
+            // Construct the string with available properties, omitting 'reserved by' if not applicable
+            return `${this.name}, ${this.reservationStatus}${
+              this.reservedBy ? `, ${this.reservedBy}` : ''
+            }\n`;
+          },
+        };
+      });
     } catch (error) {
       throw new Error(
         'Something went wrong while retrieving parking information, try again later.',
@@ -524,7 +535,7 @@ export class JoanPlugin {
     date: string; // passed by GPT
     timeslot: string; // passed by GPT
   }): Promise<string> {
-    const slot = await this.getStartAndEnd(timeslot);
+    const slot = await this.getTimeslotDetails(timeslot);
     const start = moment.tz(`${date} ${slot.from}`, this.timeZone).format();
     const end = moment.tz(`${date} ${slot.to}`, this.timeZone).format();
 
@@ -553,7 +564,7 @@ export class JoanPlugin {
             data: parking_reservation_post_data,
           },
         );
-        return reservationResponse; // Convert the response to a string
+        return JSON.stringify(reservationResponse);
       } else {
         return 'No parking spots available';
       }
