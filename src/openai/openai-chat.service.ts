@@ -3,6 +3,7 @@ import { ChatMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
 import { PluginService } from 'src/plugin';
+import { Message } from '../message/entities/message.entity';
 
 @Injectable()
 export class OpenaiChatService {
@@ -21,7 +22,7 @@ export class OpenaiChatService {
   //system message
   //Query message from user
   //funiton informatin
-  async getChatResponse({ senderName, senderEmail, threadId, plugin }) {
+  async getChatResponse({ senderName, senderEmail, threadId, plugin }): Promise<Message> {
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
       threadId,
@@ -60,7 +61,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         },
       );
       const initial_response = completion.choices[0].message;
-      await this.messageService.create({
+      const initial_response_message = await this.messageService.create({
         threadId,
         data: initial_response,
       });
@@ -113,13 +114,12 @@ If user just says Hi or how are you to start conversation, you can respond with 
         this.logger.log(`final_response Response:`);
         this.logger.log(final_response);
         chatHistory.push(final_response);
-        await this.messageService.create({
+        return await this.messageService.create({
           threadId,
           data: final_response,
         });
-        return final_response;
       }
-      return initial_response;
+      return initial_response_message;
     } catch (error) {
       this.logger.log(error);
       throw error;

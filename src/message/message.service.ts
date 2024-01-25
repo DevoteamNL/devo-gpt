@@ -38,8 +38,8 @@ export class MessageService {
     return messages.map((message: Message) => message.data);
   }
 
-  async findChatMessagesByThreadId(threadId: number): Promise<ChatMessage[]> {
-    const messages: Message[] = await this.messageRepository
+  async findChatMessagesByThreadId(threadId: number): Promise<Message[]> {
+    return await this.messageRepository
       .createQueryBuilder('message')
       .where('message.thread.id = :threadId', { threadId })
       .andWhere("message.data ->> 'role' IN (:...roles)", {
@@ -48,8 +48,6 @@ export class MessageService {
       .andWhere("message.data ->> 'content' != ''")
       .orderBy('message.id', 'ASC')
       .getMany();
-
-    return messages.map((message: Message) => message.data);
   }
 
   async create(createMessageDto: CreateMessageDto): Promise<Message> {

@@ -118,11 +118,16 @@ export class ThreadController {
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-    return await this.OpenaiChatService.getChatResponse({
+    const reply = await this.OpenaiChatService.getChatResponse({
       senderName,
       senderEmail,
       threadId,
       plugin: thread.plugin,
     });
+
+    return {
+      id: reply.id,
+      data: reply.data,
+    };
   }
 }
