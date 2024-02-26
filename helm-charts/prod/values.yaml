@@ -52,6 +52,23 @@ service:
       targetPort: https
       protocol: TCP
 
+configMapValues:
+    CLIENT_ID: "779787791084-sf0tjf22s5cl3odf9sjg6rch0if9c0qq.apps.googleusercontent.com"
+    REDIRECT_URL: "http://localhost:3000/"
+    JWT_EXPIRES_IN: "30d"
+    AZURE_SEARCH_ENDPOINT: "https://inficonnectsearchservice.search.windows.net"
+    AZURE_SEARCH_INDEX_NAME: "cv-index"
+    SPREADSHEET_ID: "1jNlPiF1nYwBn879ShvtoUfTznfrEf5QcU5b8sz_w5Ps"
+    DOMAIN_ID: "devoteam.com"
+    EMAIL_SENDER: "hardik.patel@devoteam.com"
+    SA_EMAIL_ID: "dvt-parking-app@devoteamnl-park-app.iam.gserviceaccount.com"
+    DB_HOST: "inficonnectdatabase.postgres.database.azure.com"
+    DB_PORT: "5432"
+    DB_USERNAME: "adminuser"
+    DB_NAME: "inficonnectdatabase"
+    JOAN_CLIENT_ID: "MI1rToGiOjdV5fA4qemnlumulnyWPY1u7KDwx6qG"
+    MESSAGES_PER_THREAD: "10"
+
 
 ingress:
   enabled: true

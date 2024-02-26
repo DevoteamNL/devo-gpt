@@ -33,6 +33,40 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          env:
+            - name: AZURE_OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: AZURE_OPENAI_API_KEY
+            - name: AZURE_SEARCH_ADMIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: AZURE_SEARCH_ADMIN_KEY
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: CLIENT_SECRET
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: DB_PASSWORD
+            - name: JOAN_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: JOAN_CLIENT_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-env-secret
+                  key: JWT_SECRET
+          envFrom:
+            - configMapRef:
+                name: env-configmap
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

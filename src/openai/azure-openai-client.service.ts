@@ -7,7 +7,7 @@ import { AzureKeyCredential, OpenAIClient } from '@azure/openai';
 export class AzureOpenAIClientService extends OpenAIClient {
   constructor(private configService: ConfigService) {
     const apiKey = configService.get<string>('AZURE_OPENAI_API_KEY');
-    const endpoint = 'https://swedencentral.api.cognitive.microsoft.com/';
+    const endpoint = 'https://inficonnect-dvtbrainoai.openai.azure.com/';
 
     super(endpoint, new AzureKeyCredential(apiKey));
   }
