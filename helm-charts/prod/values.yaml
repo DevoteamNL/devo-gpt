@@ -64,8 +64,8 @@ configMapValues:
     SA_EMAIL_ID: "dvt-parking-app@devoteamnl-park-app.iam.gserviceaccount.com"
     DB_HOST: "inficonnectdatabase.postgres.database.azure.com"
     DB_PORT: "5432"
-    DB_USERNAME: "adminuser"
-    DB_NAME: "inficonnectdatabase"
+    DB_USERNAME: "adminuser@inficonnectdatabase"
+    DB_NAME: "dvticpg"
     JOAN_CLIENT_ID: "MI1rToGiOjdV5fA4qemnlumulnyWPY1u7KDwx6qG"
     MESSAGES_PER_THREAD: "10"
 
