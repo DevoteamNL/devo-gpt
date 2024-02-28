@@ -19,6 +19,6 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["node", "dist/main"]
