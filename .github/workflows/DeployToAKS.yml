@@ -35,10 +35,6 @@
 name: Build and deploy to AKS with Helm
 
 on:
-  push:
-    branches:
-      - main
-      - feat/ci-cd
   workflow_dispatch:
 
 env:
