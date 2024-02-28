@@ -150,69 +150,75 @@ Employee CV File Content END
 }
 
 // TODO: Fix me, seems SDK is broken
-// async createIndex() {
-//   const result = await this.indexClient.createIndex({
-//     name: 'cv-index',
-//     fields: [
-//       {
-//         type: 'Edm.String',
-//         name: 'fileId',
-//         key: true,
-//         filterable: true,
-//       },
-//       {
-//         type: 'Edm.String',
-//         name: 'title',
-//         searchable: true,
-//       },
-//       {
-//         type: 'Edm.String',
-//         name: 'content',
-//         searchable: true,
-//         filterable: true,
-//         facetable: false,
-//       },
-//       {
-//         name: 'contentVector',
-//         type: 'Collection(Edm.Single)',
-//         dimensions: 1536,
-//         vectorSearchConfiguration: 'cv-vector-config',
-//         searchable: true,
-//         retrievable: true,
-//       },
-//     ],
-//     vectorSearch: {
-//       algorithmConfigurations: [
-//         {
-//           name: 'cv-vector-config',
-//           kind: 'hnsw',
-//           hnswParameters: {
-//             m: 4,
-//             efConstruction: 400,
-//             efSearch: 500,
-//             metric: 'cosine',
-//           },
-//         },
-//       ],
-//     },
-//     semantic: {
-//       configurations: [
-//         {
-//           name: 'cv-semantic-config',
-//           prioritizedFields: {
-//             titleField: {
-//               fieldName: 'title',
-//             },
-//             prioritizedContentFields: [
-//               {
-//                 fieldName: 'content',
-//               },
-//             ],
-//           },
-//         },
-//       ],
-//     },
-//   });
-//   this.logger.log('Index created');
-//   this.logger.log(result);
-// }
+async createIndex() {
+  const result = await this.indexClient.createIndex({
+    name: 'cv-index',
+    fields: [
+      {
+        type: 'Edm.String',
+        name: 'fileId',
+        key: true,
+        filterable: true,
+      },
+      {
+        type: 'Edm.String',
+        name: 'title',
+        searchable: true,
+      },
+      {
+        type: 'Edm.String',
+        name: 'content',
+        searchable: true,
+        filterable: true,
+        facetable: false,
+      },
+      {
+        name: 'contentVector',
+        type: 'Collection(Edm.Single)',
+        dimensions: 1536,
+        searchable: true,
+        retrievable: true,
+        vectorSearchProfile: 'cv-vector-profile', // Added vectorSearchProfile
+      },
+    ],
+    vectorSearch: {
+      profiles: [
+        {
+          name: 'cv-vector-profile',
+          algorithm: 'cv-vector-config',
+        },
+      ],
+      algorithms: [
+        {
+          name: 'cv-vector-config',
+          kind: 'hnsw',
+          hnswParameters: {
+            m: 4,
+            efConstruction: 400,
+            efSearch: 500,
+            metric: 'cosine',
+          },
+        },
+      ],
+    },
+    semantic: {
+      configurations: [
+        {
+          name: 'cv-semantic-config',
+          prioritizedFields: {
+            titleField: {
+              fieldName: 'title',
+            },
+            prioritizedContentFields: [
+              {
+                fieldName: 'content',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  });
+  this.logger.log('Index created');
+  this.logger.log(result);
+}
