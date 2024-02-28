@@ -80,7 +80,7 @@ ingress:
   hosts:
     - host: "dev-api.infini-connect.devoteam.nl"
       paths:
-        - path: /
+        - path: /api
           pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls

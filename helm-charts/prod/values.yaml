@@ -77,9 +77,9 @@ ingress:
   annotations: 
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
-    - host: "https://api.infini-connect.devoteam.nl"
+    - host: "https://infini-connect.devoteam.nl"
       paths:
-        - path: /
+        - path: /api
           pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
