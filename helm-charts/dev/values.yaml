@@ -75,7 +75,8 @@ ingress:
   className: "nginx"
   port: 80
   annotations: 
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
   hosts:
     - host: "dev-api.infini-connect.devoteam.nl"
       paths:
