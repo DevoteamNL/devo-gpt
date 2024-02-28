@@ -76,11 +76,10 @@ ingress:
   port: 80
   annotations: 
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
   hosts:
     - host: "https://infini-connect.devoteam.nl"
       paths:
-        - path: /api(/|$)(.*)
+        - path: /api
           pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
