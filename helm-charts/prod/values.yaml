@@ -1,0 +1,112 @@
+# Default values for infini-connect-ui.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+namespace: ic-core-acc
+
+environment: prod
+
+image:
+  repository: inficonnectacr.azurecr.io/infini-connect-ui
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  ports:
+    http:
+      port: 80
+      targetPort: http
+      protocol: TCP
+    https:
+      port: 443
+      targetPort: https
+      protocol: TCP
+
+configMapValues:
+    CLIENT_ID: "779787791084-sf0tjf22s5cl3odf9sjg6rch0if9c0qq.apps.googleusercontent.com"
+    REDIRECT_URL: "http://localhost:3000/"
+    JWT_EXPIRES_IN: "30d"
+    AZURE_SEARCH_ENDPOINT: "https://inficonnectsearchservice.search.windows.net"
+    AZURE_SEARCH_INDEX_NAME: "cv-index"
+    SPREADSHEET_ID: "1jNlPiF1nYwBn879ShvtoUfTznfrEf5QcU5b8sz_w5Ps"
+    DOMAIN_ID: "devoteam.com"
+    EMAIL_SENDER: "hardik.patel@devoteam.com"
+    SA_EMAIL_ID: "dvt-parking-app@devoteamnl-park-app.iam.gserviceaccount.com"
+    DB_HOST: "inficonnectdatabase.postgres.database.azure.com"
+    DB_PORT: "5432"
+    DB_USERNAME: "prod_user@inficonnectdatabase"
+    DB_NAME: "icdb_prod"
+    JOAN_CLIENT_ID: "MI1rToGiOjdV5fA4qemnlumulnyWPY1u7KDwx6qG"
+    MESSAGES_PER_THREAD: "10"
+
+
+ingress:
+  enabled: true
+  className: "nginx"
+  port: 80
+  annotations: 
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: "https://infini-connect.devoteam.nl"
+      paths:
+        - path: /api
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
