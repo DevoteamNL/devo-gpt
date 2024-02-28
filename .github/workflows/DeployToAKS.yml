@@ -35,10 +35,6 @@
 name: Build and deploy to AKS with Helm
 
 on:
-  push:
-    branches:
-      - main
-      - feat/ci-cd
   workflow_dispatch:
 
 env:
@@ -155,6 +151,6 @@ jobs:
         with:
           action: deploy
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          namespace: "ic-core-acc" 
+          namespace: "ic-core" 
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
