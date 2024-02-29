@@ -22,6 +22,7 @@ export class FeedbackService {
     feedback.message = { id: messageId } as Message;
     feedback.text = createFeedbackDto.text;
     feedback.rating = createFeedbackDto.rating;
+    feedback.user = createFeedbackDto.user;
 
     return this.feedbackRepository.save(feedback);
   }
