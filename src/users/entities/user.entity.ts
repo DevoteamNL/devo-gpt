@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { IsEmail } from 'class-validator';
 import { Thread } from '../../thread/entities/thread.entity';
+import { Feedback } from '../../message/feedback/entities/feedback.entity';
 
 @Entity() // Use the Entity decorator
 export class User {
@@ -26,6 +27,10 @@ export class User {
   // TODO: Add lazy loading to the threads property
   @OneToMany(() => Thread, (thread) => thread.user)
   threads: Thread[];
+
+  // TODO: Add lazy loading to the threads property
+  @OneToMany(() => Feedback, (feedback) => feedback.user)
+  feedbacks: Feedback[];
 
   constructor(
     providerId: string,
