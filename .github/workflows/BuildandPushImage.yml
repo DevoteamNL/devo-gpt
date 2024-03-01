@@ -29,4 +29,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.NEW_REGISTRY_NAME }}.azurecr.io/infini-connect:dev
+          tags: ${{ secrets.NEW_REGISTRY_NAME }}.azurecr.io/infini-connect:${{ github.sha }}
