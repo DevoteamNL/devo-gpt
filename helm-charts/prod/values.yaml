@@ -9,7 +9,7 @@ namespace: ic-core
 environment: prod
 
 image:
-  repository: inficonnectacr.azurecr.io/infini-connect-ui
+  repository: inficonnectacr.azurecr.io/infini-connect
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
