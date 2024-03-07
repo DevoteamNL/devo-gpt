@@ -32,6 +32,10 @@ export class User {
   @OneToMany(() => Feedback, (feedback) => feedback.user)
   feedbacks: Feedback[];
 
+  // Enable or disable access
+  @Column({ default: true })
+  is_active: boolean;
+
   constructor(
     providerId: string,
     username: string,

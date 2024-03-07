@@ -253,7 +253,7 @@ export class JoanPlugin {
 
   @Definition({
     description: `Make desk reservation/booking for Amsterdam office, 
-      Validation: Allow reservation for up to 14 days in advance only
+      Validation: Please use this function to make reservation for up to 14 days in advance only
       Based on desk name and date timeslot (Morning, Afternoon or All day), By default it is "All day"`,
     parameters: {
       type: 'object',
@@ -406,13 +406,21 @@ export class JoanPlugin {
       required: ['date', 'timeslot'],
     },
 
-    followUpPrompt:
-      '\n\nAbove information is parking reservation details in CSV format' +
-      'Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)\n' +
-      '\n If use asked if he has parking? you can check above data to see if user has any reservations' +
-      '\n User can also ask who has parking reservations? then you can provide him details of each user and their parking number' +
-      'Try to include calculated date and day name in response.' +
-      '\n\n\n',
+    followUpPrompt: `
+
+If success, Above information is parking reservation details in CSV format
+Garage Name and Number,Reservation Status (Reserved/Available),Employee Name(Reserved By)
+
+If use asked if he or someone else has parking? you can check above data to see if user has any reservations
+
+Try to include calculated date and day name in response.
+
+Example query can be: 
+- do I have parking reservation for tomorrow?
+- give me names of people who has reservation for tomorrow
+User can also ask who has parking reservations? then you can provide him details of each user and their parking number
+
+`,
     followUpTemperature: 0.3,
     followUpModel: 'gpt-35-turbo-16k',
   })
@@ -504,7 +512,7 @@ export class JoanPlugin {
 
   @Definition({
     description: `Make parking/parking spot reservation/booking for Amsterdam office,
-      Validation: Allow reservation for up to 14 days in advance only 
+      Validation: Please use this function to make reservation for up to 14 days in advance only 
       Based on date and timeslot (Morning, Afternoon or All day), Be default it is "All day"`,
     parameters: {
       type: 'object',
@@ -528,9 +536,8 @@ export class JoanPlugin {
     },
 
     followUpPrompt:
-      '\n\nRespond based on user message like parking spot summary, availability, or parking reservation details ' +
+      '\n\nNOTE: Respond based on user message like parking spot summary, availability, or parking reservation details ' +
       'and also included calculated date and day in response' +
-      'Example query can be: do I have parking reservation for tomorrow?, give me names of people who has reservation for tomorrow\n\n\n' +
       'You may ask follow up question if user wants to reserve desk also' +
       '\n\n\n',
     followUpTemperature: 0.3,
