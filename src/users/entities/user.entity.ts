@@ -1,9 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Unique,
+} from 'typeorm';
 import { IsEmail } from 'class-validator';
 import { Thread } from '../../thread/entities/thread.entity';
 import { Feedback } from '../../message/feedback/entities/feedback.entity';
 
-@Entity() // Use the Entity decorator
+@Entity()
+@Unique('UQ_USERNAME_PROVIDER', ['username', 'providerId'])
 export class User {
   @PrimaryGeneratedColumn()
   id: number;

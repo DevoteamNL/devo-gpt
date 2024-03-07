@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm'; // Import InjectRepository
@@ -8,6 +8,7 @@ import { Thread } from '../thread/entities/thread.entity'; // Import Repository
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>, // Use Repository<User>
@@ -16,9 +17,23 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.usersRepository.create(createUserDto);
-    await this.usersRepository.save(user);
-    return user;
+    try {
+      const user = this.usersRepository.create(createUserDto);
+      await this.usersRepository.save(user);
+      return user;
+    } catch (error) {
+      if (error.code === '23505') {
+        const existingUser = await this.findByProviderId(
+          createUserDto.providerId,
+        );
+        if (existingUser) {
+          return existingUser;
+        }
+        throw new Error('User already exists with this provider ID');
+      }
+      this.logger.error(`Failed to create user: ${error.message}`);
+      throw error;
+    }
   }
 
   async findAll(): Promise<User[]> {
