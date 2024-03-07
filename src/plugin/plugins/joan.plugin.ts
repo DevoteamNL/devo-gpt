@@ -252,8 +252,9 @@ export class JoanPlugin {
   }
 
   @Definition({
-    description:
-      'Make desk reservation/booking for Amsterdam office, based on desk name and date timeslot (Morning, Afternoon or All day)',
+    description: `Make desk reservation/booking for Amsterdam office, 
+      Validation: Allow reservation for up to 14 days in advance only
+      Based on desk name and date timeslot (Morning, Afternoon or All day), By default it is "All day"`,
     parameters: {
       type: 'object',
       properties: {
@@ -285,7 +286,7 @@ export class JoanPlugin {
       required: ['deskName', 'date', 'timeslot'],
     },
     followUpPrompt:
-      'Respond with calculated date and day and full name like "Bar table #6", "Desk #1 - Dual Monitor"' +
+      '\n\nNOTE: Respond with calculated date and day and full name like "Bar table #6", "Desk #1 - Dual Monitor"' +
       '\n\n\n',
   })
   private async postDeskReservation({
@@ -301,6 +302,14 @@ export class JoanPlugin {
   }): Promise<string> {
     // First retrieve list of desks ids and name, filter and find id of the deskName passed in argument
     try {
+      // Validate if date is within 14 days
+      const today = moment().tz(this.timeZone);
+      const reservationDate = moment.tz(date, this.timeZone);
+      const daysDifference = reservationDate.diff(today, 'days');
+      console.log('daysDifference#######', daysDifference);
+      if (daysDifference > 12) {
+        return 'Reservation can be made for up to 14 days in advance only';
+      }
       const query_params = {
         limit: '1000',
         search: deskName, // Assuming 'search' is the correct parameter to filter by desk name
@@ -494,8 +503,9 @@ export class JoanPlugin {
   }
 
   @Definition({
-    description:
-      'Make parking/parking spot reservation/booking for Amsterdam office, based on date and timeslot (Morning, Afternoon or All day)',
+    description: `Make parking/parking spot reservation/booking for Amsterdam office,
+      Validation: Allow reservation for up to 14 days in advance only 
+      Based on date and timeslot (Morning, Afternoon or All day), Be default it is "All day"`,
     parameters: {
       type: 'object',
       properties: {
@@ -518,7 +528,7 @@ export class JoanPlugin {
     },
 
     followUpPrompt:
-      'Respond based on user message like parking spot summary, availability, or parking reservation details ' +
+      '\n\nRespond based on user message like parking spot summary, availability, or parking reservation details ' +
       'and also included calculated date and day in response' +
       'Example query can be: do I have parking reservation for tomorrow?, give me names of people who has reservation for tomorrow\n\n\n' +
       'You may ask follow up question if user wants to reserve desk also' +
@@ -538,6 +548,13 @@ export class JoanPlugin {
     const slot = await this.getTimeslotDetails(timeslot);
     const start = moment.tz(`${date} ${slot.from}`, this.timeZone).format();
     const end = moment.tz(`${date} ${slot.to}`, this.timeZone).format();
+    // Validate if date is within 14 days
+    const today = moment().tz(this.timeZone);
+    const reservationDate = moment.tz(date, this.timeZone);
+    const daysDifference = reservationDate.diff(today, 'days');
+    if (daysDifference > 12) {
+      return 'Reservation can be made for up to 14 days in advance only';
+    }
 
     // First retrieve available parking spots
     try {
