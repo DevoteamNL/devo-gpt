@@ -22,7 +22,12 @@ export class OpenaiChatService {
   //system message
   //Query message from user
   //funiton informatin
-  async getChatResponse({ senderName, senderEmail, threadId, plugin }): Promise<Message> {
+  async getChatResponse({
+    senderName,
+    senderEmail,
+    threadId,
+    plugin,
+  }): Promise<Message> {
     // Initialize the message array with existing messages or an empty array
     const chatHistory = await this.messageService.findAllMessagesByThreadId(
       threadId,
@@ -36,7 +41,7 @@ export class OpenaiChatService {
         content: `Current Date and Time is ${new Date().toISOString()}.
 User's name is ${senderName} and user's emailID is ${senderEmail}.
  
-You are a AI assistant who helps with ONLY topics that you can find in function callings.
+You are a AI assistant who helps with ONLY topics that you can find in Plugins/Functions.
 
 If you are not sure about question ask for clarification or say you do not know the answer.
 

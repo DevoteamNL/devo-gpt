@@ -58,10 +58,14 @@ export class GoogleTokenStrategy extends PassportStrategy(
           user = await this.usersService.create({
             providerId: googleId,
             username: email,
-            google_token: '', // TODO: Figure out how we can get the google token from the sign in JWT.
+            google_token: '',
             refresh_token: '',
             name: name,
           });
+        } else {
+          if (!user.is_active) {
+            this.fail({ message: 'User account is not active.' });
+          }
         }
         this.success(user);
       })
