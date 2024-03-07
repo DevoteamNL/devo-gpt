@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { definitions } from './definition.decorator';
 import { findPlugin, pluginsByDisplayName } from './plugin.decorator';
 import './plugins/joan.plugin';
+import './plugins/cv.plugin';
 import { initializePlugins } from './plugin.decorator';
 import { ConfigService } from '@nestjs/config';
 

@@ -45,6 +45,7 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('upload')
   uploadURL(@Request() req): Promise<string> {
+    console.log('Inside upload');
     return this.googledriveService.uploadURL(
       req.body.google_drive_url,
       'hardik.patel@devoteam.com',

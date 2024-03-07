@@ -25,10 +25,10 @@ export class User {
   @Column()
   providerId: string;
 
-  @Column({ select: false })
+  @Column() //{ select: false }
   google_token: string;
 
-  @Column({ select: false, nullable: true })
+  @Column({ nullable: true })
   refresh_token: string;
 
   // TODO: Add lazy loading to the threads property

@@ -26,12 +26,10 @@ export class CognitiveSearchService {
       endpoint,
       indexName,
       new AzureKeyCredential(adminKey),
-      { apiVersion: '2023-07-01-Preview' },
     );
     this.indexClient = new SearchIndexClient(
       endpoint,
       new AzureKeyCredential(adminKey),
-      { apiVersion: '2023-07-01-Preview' },
     );
   }
 
@@ -75,7 +73,7 @@ export class CognitiveSearchService {
       this.logger.log(`Searching for: ${query}`);
       const vectorValue = await this.openaiService.generateEmbedding(query);
       // TODO: Fix me, vector search isn't working as expected
-      const response = await this.searchClient.search(query, {
+      const response = await this.searchClient.search('*', {
         vector: {
           value: vectorValue,
           kNearestNeighborsCount: 4,
