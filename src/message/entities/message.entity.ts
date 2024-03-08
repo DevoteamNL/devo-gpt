@@ -21,4 +21,7 @@ export class Message {
 
   @OneToMany(() => Feedback, (feedback) => feedback.message)
   feedbacks: Feedback[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }
