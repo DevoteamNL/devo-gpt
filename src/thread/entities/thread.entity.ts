@@ -24,6 +24,9 @@ export class Thread {
   @OneToMany(() => Message, (message) => message.thread)
   messages: Message[];
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
   @DeleteDateColumn()
   deletedAt?: Date;
 

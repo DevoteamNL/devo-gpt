@@ -12,8 +12,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>, // Use Repository<User>
-    @InjectRepository(Thread)
-    private readonly threadRepository: Repository<Thread>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {

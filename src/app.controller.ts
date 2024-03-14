@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
-import { OpenaiService } from './openai/openai.service';
 import { GoogledriveService } from './googledrive/googledrive.service';
 
 @Controller()
@@ -17,7 +16,6 @@ export class AppController {
 
   constructor(
     private readonly appService: AppService,
-    private readonly openaiService: OpenaiService,
     private readonly googledriveService: GoogledriveService,
   ) {}
 
@@ -45,6 +43,7 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('upload')
   uploadURL(@Request() req): Promise<string> {
+    console.log('Inside upload');
     return this.googledriveService.uploadURL(
       req.body.google_drive_url,
       'hardik.patel@devoteam.com',

@@ -4,4 +4,5 @@ export class CreateUserDto {
   google_token: string;
   refresh_token: string;
   name?: string;
+  is_active?: boolean;
 }

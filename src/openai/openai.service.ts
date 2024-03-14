@@ -1,5 +1,10 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ChatMessage, FunctionDefinition } from '@azure/openai';
+import { Injectable, Logger } from '@nestjs/common';
+import {
+  ChatCompletions,
+  ChatMessage,
+  Completions,
+  FunctionDefinition,
+} from '@azure/openai';
 import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
 import { EmployeesService } from '../employees/employees.service';
 import { BufferMemoryService } from '../utils/buffer-memory/buffer-memory.service';
@@ -11,12 +16,10 @@ export class OpenaiService {
   private readonly gpt35t16kDeployment = 'gpt-35-turbo-16k';
   private readonly gpt35Deployment = 'gpt-35-turbo';
   private readonly gpt4Deployment = 'gpt-4';
-  // private readonly gpt432kDeployment = 'gpt-4-32k';
+  private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
     private readonly joanDeskService: JoanDeskService,
-    @Inject(forwardRef(() => EmployeesService))
-    private readonly employeesService: EmployeesService,
     private readonly bufferMemoryService: BufferMemoryService,
     private readonly azureOpenAIClient: AzureOpenAIClientService,
   ) {}
@@ -436,5 +439,17 @@ If user just says Hi or how are you to start conversation, you can respond with 
       this.logger.log(error);
       throw error;
     }
+  }
+
+  // Call OpenAI's Chat completions for string
+  async getChatCompletions(
+    messages: ChatMessage[],
+    options: { temperature: number },
+  ): Promise<ChatCompletions> {
+    return this.azureOpenAIClient.getChatCompletions(
+      this.gpt4Deployment,
+      messages,
+      options,
+    );
   }
 }

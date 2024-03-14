@@ -25,10 +25,10 @@ export class User {
   @Column()
   providerId: string;
 
-  @Column({ select: false })
+  @Column() //{ select: false }
   google_token: string;
 
-  @Column({ select: false, nullable: true })
+  @Column({ nullable: true })
   refresh_token: string;
 
   // TODO: Add lazy loading to the threads property
@@ -42,6 +42,9 @@ export class User {
   // Enable or disable access
   @Column({ default: true })
   is_active: boolean;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
   constructor(
     providerId: string,

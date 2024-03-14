@@ -9,3 +9,5 @@
 # CodeStream ignored files
 /../../dvt-parking-app\.idea/codestream.xml
 !/copilot/
+# GitHub Copilot persisted chat sessions
+/copilot/chatSessions

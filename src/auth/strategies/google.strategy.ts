@@ -51,6 +51,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         ...(refreshToken && { refresh_token: refreshToken }),
         name: displayName,
       });
+    } else {
+      await this.usersService.update(user.id, {
+        google_token: accessToken,
+        ...(refreshToken && { refresh_token: refreshToken }),
+      });
     }
     return user;
   }
