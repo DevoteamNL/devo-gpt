@@ -1,69 +1,57 @@
+import axios, { AxiosInstance } from 'axios';
+import moment from 'moment-timezone';
 import { ConfigService } from '../types';
+import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
-import { Definition } from '../definition.decorator';
-
-interface Desk {
-  id: string;
-  name: string;
-  schedule: any[];
-}
-
-interface ParkingSpotOptions {
-  start?: string;
-  end?: string;
-  show?: 'available' | 'reserved' | 'All';
-  date?: string;
-  timeslot?: string;
-}
+import { CognitiveSearchService } from '../../cognitive-search/cognitive-search.service';
 
 @Plugin({ displayName: 'CVs' })
 export class CVsPlugin {
   private readonly logger = new Logger(CVsPlugin.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly cognitiveSearchService: CognitiveSearchService,
+  ) {}
 
   @Definition({
-    description:
-      'Get the employees professional work experience details based on a given employee name or certificate name or skill name',
+    description: `Get the employees professional work experience context/details from Vector Database`,
     parameters: {
       type: 'object',
       properties: {
-        name: {
+        query: {
           type: 'string',
-          description: 'The employee name',
-        },
-        certificate: {
-          type: 'string',
-          description: 'The certificate name',
-        },
-        skill: {
-          type: 'string',
-          description: 'The skill name',
+          description:
+            'Complete User message or query/question which will be used for vector similarity search',
         },
       },
-      required: ['start_date', 'end_date'],
     },
+    followUpPrompt: `
+    
 
-    followUpPrompt: 'Following is information found in CV\n',
+      
+Look at user question and look at employee work experience above see if you can find answer from above context, 
+if you don't find answer within context, say it do not know the answer.`,
     followUpTemperature: 0.7,
-    followUpModel: 'gpt-35-turbo-16k',
+    followUpModel: 'gpt-4',
   })
   private async getEmployeesWorkDetails({
-    name,
-    certificate,
-    skill,
+    query,
   }: {
-    name: string;
-    certificate?: string;
-    skill?: string;
+    query: string;
   }): Promise<string> {
+    this.logger.log(
+      `Getting employees professional work experience details based on a ${query}`,
+    );
     try {
-      return 'Employee ABC has worked with ING as Kubernetes administrator\n';
+      // const response = await this.httpService.get(url).toPromise();
+      const searchResults =
+        await this.cognitiveSearchService.doSemanticHybridSearch(query);
+      return searchResults.join('\n');
     } catch (error) {
-      throw new Error(
-        'Something went wrong while retrieving desk information, try again later.',
-      );
+      this.logger.error(error);
+      throw new Error('Unable to fetch employee work experience details');
     }
   }
 }

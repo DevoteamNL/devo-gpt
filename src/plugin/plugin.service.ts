@@ -5,11 +5,15 @@ import './plugins/joan.plugin';
 import './plugins/cv.plugin';
 import { initializePlugins } from './plugin.decorator';
 import { ConfigService } from '@nestjs/config';
+import { CognitiveSearchService } from '../cognitive-search/cognitive-search.service';
 
 @Injectable()
 export class PluginService {
-  constructor(configService: ConfigService) {
-    initializePlugins(configService);
+  constructor(
+    configService: ConfigService,
+    cognitivesearchService: CognitiveSearchService,
+  ) {
+    initializePlugins(configService, cognitivesearchService);
   }
 
   public get functionDefinitions() {

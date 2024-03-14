@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SearchClient, SearchIndexClient } from '@azure/search-documents';
 import { AzureKeyCredential } from '@azure/openai';
@@ -18,7 +18,6 @@ export class CognitiveSearchService {
    */
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => OpenaiService))
     private readonly openaiService: OpenaiService,
   ) {
     const { endpoint, indexName, adminKey } = this.getAzureSearchConfig();
@@ -73,14 +72,14 @@ export class CognitiveSearchService {
       this.logger.log(`Searching for: ${query}`);
       const vectorValue = await this.openaiService.generateEmbedding(query);
       // TODO: Fix me, vector search isn't working as expected
-      const response = await this.searchClient.search('*', {
+      const response = await this.searchClient.search(query, {
         vector: {
           value: vectorValue,
           kNearestNeighborsCount: 4,
           fields: ['contentVector'],
         },
         select: ['title', 'content'],
-        top: 4,
+        top: 10,
       });
 
       const concatenatedResults: string[] = [];
@@ -90,7 +89,7 @@ export class CognitiveSearchService {
         const employeeData = `
 
 Employee CV File Name: ${result.document.title}
-Employee CV File Content START:
+Employee Detail File Content START:
 ${result.document.content.replace(/[\n\r]+/g, '\n')}
           
           

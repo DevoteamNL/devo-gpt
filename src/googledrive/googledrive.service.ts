@@ -11,6 +11,18 @@ import * as os from 'os';
 import PPTX from 'nodejs-pptx';
 import pdf from 'pdf-parse';
 import { CognitiveSearchService } from '../cognitive-search/cognitive-search.service';
+import { AzureOpenAIClientService } from '../openai/azure-openai-client.service';
+import { Completions } from '@azure/openai';
+import { ChatMessage } from 'langchain/schema';
+import fuzzball from 'fuzzball';
+
+interface File {
+  id: string;
+  name: string;
+  mimeType: string;
+  createdTime: string;
+  modifiedTime: string;
+}
 
 @Injectable()
 export class GoogledriveService {
@@ -23,6 +35,7 @@ export class GoogledriveService {
     private readonly googleOauth2ClientService: GoogleOauth2ClientService,
     private readonly openaiService: OpenaiService,
     private readonly cognitiveSearchService: CognitiveSearchService,
+    private readonly azureOpenAIClient: AzureOpenAIClientService,
   ) {
     this.oAuth2Client = this.googleOauth2ClientService.getOauth2Client();
     this.driveClient = google.drive({
@@ -72,18 +85,26 @@ export class GoogledriveService {
     const query = `(${nameQueries.join(' or ')}) and (${typeQueries.join(
       ' or ',
     )})`;
+    this.logger.log(`Search query: ${query}`);
 
     // Use the Google Drive API to list files matching the query
     const results = await this.driveClient.files.list({
       q: query,
-      fields: 'files(id, name, mimeType)',
+      fields:
+        'nextPageToken, files(id, name, mimeType,createdTime,modifiedTime)',
       pageSize: 1000, // Adjust this based on your needs
+      corpora: 'allDrives',
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
     });
 
+    this.logger.log(`Found ${results.data.files.length} files`);
     // If no files are found, return an empty result
     if (!results.data.files || results.data.files.length === 0) {
+      this.logger.log('No files found');
       return {};
     }
+    const files = results.data.files;
 
     const skipFiles = [
       '1wy4Z4QclqXYwH9iwVmMNlwcy2g63cBOq',
@@ -94,65 +115,176 @@ export class GoogledriveService {
       '1Nf-T5-8WZitRYZ4fC0NUon27Nto7uNGi',
     ];
 
-    const fileIds = results.data.files.map((file) => file.id);
-    skipFiles.push(
-      ...(await this.cognitiveSearchService.getDocumentsByFileIds(fileIds)),
-    );
+    const fileIds = files.map((file) => file.id);
+    // await this.cognitiveSearchService.deleteAllDocuments();
+    // skipFiles.push(
+    //   ...(await this.cognitiveSearchService.getDocumentsByFileIds(fileIds)),
+    // );
+
+    const uniqueLatestFiles = this.remove_duplicate_files(files);
 
     // Fetch content for each file
     const fileContents = [];
     // initialize count varible to stop for loop after 10 iterations
-    let count = 0;
-    for (const file of results.data.files) {
-      if (skipFiles.includes(file.id)) continue;
 
-      count++;
-      this.logger.log(
-        `Fetching content for id:"${file.id}" Name: "${file.name}" count: ${count}`,
-      );
+    const chunks = [];
+    for (let i = 0; i < uniqueLatestFiles.length; i += 10) {
+      chunks.push(uniqueLatestFiles.slice(i, i + 10));
+    }
 
-      try {
-        // New try-catch block to handle individual file errors
-        let content = '';
-        switch (file.mimeType) {
-          case mimeTypeMap['docx']:
-            content = await this.handleDocx(file.id);
-            break;
-          case mimeTypeMap['googleslides']:
-            content = await this.handleGoogleWorkspaceFiles(file.id);
-            break;
-          case mimeTypeMap['pptx']:
-            content = await this.handlePPTX(file.id);
-            break;
-        }
-
-        this.logger.log(`Content received for ${file.name}`);
-        const contentVector = await this.openaiService.generateEmbedding(
-          content,
-        );
-        fileContents.push({
-          fileId: file.id,
-          title: file.name,
-          content,
-          contentVector,
+    for (const chunk of chunks) {
+      const promises = chunk
+        .filter((file) => !skipFiles.includes(file.id))
+        .map(async (file, index) => {
+          const count = index + 1;
+          this.logger.log(
+            `Fetching content for id:"${file.id}" Name: "${file.name}" count: ${count}`,
+          );
+          await this.process_file(file, mimeTypeMap);
         });
-        await this.cognitiveSearchService.uploadDocuments([
-          {
-            fileId: file.id,
-            title: file.name,
-            content,
-            contentVector,
-          },
-        ]);
-      } catch (error) {
-        // Log the error for that specific file and continue with the next file
-        this.logger.error(
-          `Error processing file "${file.name}": ${error.message}`,
-        );
-      }
+
+      await Promise.all(promises);
+      await new Promise((resolve) => setTimeout(resolve, 90000)); // Wait for 90 seconds
     }
 
     return fileContents;
+  }
+
+  private remove_duplicate_files(files) {
+    function findBestMatchGroup(file: File, groups: File[][]): number {
+      let bestMatchIndex = -1;
+      let highestScore = 0;
+
+      groups.forEach((group: any[], index) => {
+        // We'll just compare with the first item of each group as a representative
+        const score = fuzzball.ratio(file.name, group[0].name);
+
+        if (score > 83 && score > highestScore) {
+          highestScore = score;
+          bestMatchIndex = index;
+        }
+      });
+
+      return bestMatchIndex;
+    }
+
+    // Group files by fuzzy name matching
+    const groupedFiles: File[][] = [];
+    files.forEach((file) => {
+      const matchIndex = findBestMatchGroup(file, groupedFiles);
+
+      if (matchIndex > -1) {
+        // If a similar group is found, add to that group
+        groupedFiles[matchIndex].push(file);
+      } else {
+        // Otherwise, start a new group
+        groupedFiles.push([file]);
+      }
+    });
+
+    // Sort and filter as before
+    const uniqueLatestFiles: File[] = groupedFiles.map((group) => {
+      return group.sort((a, b) =>
+        b.modifiedTime.localeCompare(a.modifiedTime),
+      )[0];
+    });
+
+    // 'uniqueLatestFiles' now contains only the latest version of each CV
+    console.log(`Filtered ${uniqueLatestFiles.length} unique/latest files`);
+    return uniqueLatestFiles;
+  }
+
+  private async process_file(
+    file,
+    mimeTypeMap: { pptx: string; googleslides: string; docx: string },
+  ) {
+    try {
+      // New try-catch block to handle individual file errors
+      let content = '';
+      switch (file.mimeType) {
+        case mimeTypeMap['docx']:
+          content = await this.handleDocx(file.id);
+          break;
+        case mimeTypeMap['googleslides']:
+          content = await this.handleGoogleWorkspaceFiles(file.id);
+          break;
+        case mimeTypeMap['pptx']:
+          content = await this.handlePPTX(file.id);
+          break;
+      }
+
+      this.logger.log(`Content received for ${file.name}`);
+
+      const detailedPrompt = `Please organize the following CV content into distinct,clearly defined sections, separated by "####CHUNK####". 
+Sections: "Personal Contact Details and Summary", "Professional Experience with Skills", "Education ands Certifications", and any other relevant sections.
+Ensure each section is comprehensive and self-contained, providing all necessary information within the chunk.
+Do not modify the content of the CV. Professional experience should be as detailed as it is in CV.
+Keep details of each project experience, do not summarize it.
+
+
+
+##### CV Content STARTs #####
+=========================================================================
+
+
+${content}
+
+
+=========================================================================
+##### CV Content ENDs #####
+
+`;
+
+      const chunkedResponse = await this.openaiService.getChatCompletions(
+        [
+          {
+            role: 'system',
+            content: `Please organize the following CV content into distinct,clearly defined sections, separated by "####CHUNK####". 
+Sections: "Personal Contact Details and Summary", "Professional Experience with Skills", "Education ands Certifications", and any other relevant sections.
+Ensure each section is comprehensive and self-contained, providing all necessary information within the chunk.
+Do not modify the content of the CV. Professional experience should be as detailed as it is in CV.
+Keep details of each project experience, do not summarize it.
+If abbreviations are used, please also expand them for clarity.
+Each chunk should have user's name in it, so we know each chunk belongs to which user.
+
+Remember Each segment should be seperated by "####CHUNK####" 
+Remember, the goal is to make each section of the CV as informative as possible`,
+          },
+          {
+            role: 'user',
+            content: detailedPrompt,
+          },
+        ],
+        { temperature: 0.7 },
+      );
+      this.logger.log(`Chunked response: ${JSON.stringify(chunkedResponse)}`);
+      const chunksText = chunkedResponse.choices[0].message.content;
+
+      // Step 2: Split the chunks by the delimiter
+      const chunks = chunksText
+        .split('####CHUNK####')
+        .filter((chunk) => chunk.trim() !== '');
+
+      this.logger.log(`Chunks received for ${file.name}`);
+      this.logger.log(`Chunks: ${chunks}`);
+
+      // Step 3: Create an array of objects for each chunk and upload
+      const chunkedDocumentsPromise = chunks.map(async (chunk, index) => ({
+        fileId: `${file.id}_chunk_${index}`, // Unique ID for each chunk
+        title: `${file.name} (Chunk ${index + 1})`,
+        content: chunk,
+        // You might need to generate a content vector for each chunk if required by your cognitive search service
+        contentVector: await this.openaiService.generateEmbedding(chunk),
+      }));
+      const chunkedDocuments = await Promise.all(chunkedDocumentsPromise);
+      this.logger.log(`Chunked documents: ${chunkedDocuments}`);
+      await this.cognitiveSearchService.uploadDocuments(chunkedDocuments);
+    } catch (error) {
+      // Log the error for that specific file and continue with the next file
+      this.logger.error(
+        `Error processing file "${file.name}": ${error.message}`,
+      );
+    }
   }
 
   private async handleDocx(google_drive_url: string): Promise<string> {
