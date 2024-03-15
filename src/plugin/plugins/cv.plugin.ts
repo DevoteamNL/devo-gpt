@@ -20,7 +20,7 @@ export class CVsPlugin {
     parameters: {
       type: 'object',
       properties: {
-        query: {
+        completeUserMessage: {
           type: 'string',
           description:
             'Complete User message or query/question which will be used for vector similarity search',
@@ -37,17 +37,19 @@ if you don't find answer within context, say it do not know the answer.`,
     followUpModel: 'gpt-4',
   })
   private async getEmployeesWorkDetails({
-    query,
+    completeUserMessage,
   }: {
-    query: string;
+    completeUserMessage: string;
   }): Promise<string> {
     this.logger.log(
-      `Getting employees professional work experience details based on a ${query}`,
+      `Getting employees professional work experience details based on : ${completeUserMessage}`,
     );
     try {
       // const response = await this.httpService.get(url).toPromise();
       const searchResults =
-        await this.cognitiveSearchService.doSemanticHybridSearch(query);
+        await this.cognitiveSearchService.doSemanticHybridSearch(
+          completeUserMessage,
+        );
       return searchResults.join('\n');
     } catch (error) {
       this.logger.error(error);
