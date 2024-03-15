@@ -57,7 +57,7 @@ configMapValues:
     REDIRECT_URL: "http://localhost:3000/"
     JWT_EXPIRES_IN: "30d"
     AZURE_SEARCH_ENDPOINT: "https://inficonnectsearchservice.search.windows.net"
-    AZURE_SEARCH_INDEX_NAME: "cv-index"
+    AZURE_SEARCH_INDEX_NAME: "cv-chunks"
     SPREADSHEET_ID: "1jNlPiF1nYwBn879ShvtoUfTznfrEf5QcU5b8sz_w5Ps"
     DOMAIN_ID: "devoteam.com"
     EMAIL_SENDER: "hardik.patel@devoteam.com"

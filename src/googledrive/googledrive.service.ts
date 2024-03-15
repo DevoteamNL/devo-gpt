@@ -144,7 +144,7 @@ export class GoogledriveService {
         });
 
       await Promise.all(promises);
-      await new Promise((resolve) => setTimeout(resolve, 90000)); // Wait for 90 seconds
+      await new Promise((resolve) => setTimeout(resolve, 20000)); // Wait for 90 seconds
     }
 
     return fileContents;
