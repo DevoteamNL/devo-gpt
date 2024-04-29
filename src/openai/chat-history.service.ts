@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ChatMessage } from '@azure/openai';
+import { ChatResponseMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 
 @Injectable()
 export class ChatHistoryService {
-  private chatHistories = new Map<string, ChatMessage[]>();
+  private chatHistories = new Map<string, ChatResponseMessage[]>();
 
   constructor(private messageService: MessageService) {}
 
-  async initChatHistory(threadId: string): Promise<ChatMessage[]> {
+  async initChatHistory(threadId: string): Promise<ChatResponseMessage[]> {
     if (!this.chatHistories.has(threadId)) {
       const history = await this.messageService.findAllMessagesByThreadId(
         +threadId,
@@ -18,7 +18,10 @@ export class ChatHistoryService {
     return this.chatHistories.get(threadId);
   }
 
-  async addMessage(threadId: string, message: ChatMessage): Promise<void> {
+  async addMessage(
+    threadId: string,
+    message: ChatResponseMessage,
+  ): Promise<void> {
     // Retrieve the current chat history for the thread
     const history = this.chatHistories.get(threadId) || [];
 
@@ -37,7 +40,7 @@ export class ChatHistoryService {
     }
   }
 
-  addSystemMessage(threadId: string, systemMessage: ChatMessage): void {
+  addSystemMessage(threadId: string, systemMessage: ChatResponseMessage): void {
     const history = this.chatHistories.get(threadId) || [];
     history.unshift(systemMessage); // Prepend system message to the chat history
 
@@ -53,7 +56,7 @@ export class ChatHistoryService {
     this.chatHistories.set(threadId, updatedHistory);
   }
 
-  getChatHistory(threadId: string): ChatMessage[] {
+  getChatHistory(threadId: string): ChatResponseMessage[] {
     return this.chatHistories.get(threadId) || [];
   }
 }

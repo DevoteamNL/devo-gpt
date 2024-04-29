@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ChatMessage, FunctionDefinition } from '@azure/openai';
+import { ChatResponseMessage, FunctionDefinition } from '@azure/openai';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
 export class BufferMemoryService {
-  private buffer: Map<string, ChatMessage[]> = new Map();
+  private buffer: Map<string, ChatResponseMessage[]> = new Map();
   private readonly expiryTime: number = 10 * 60 * 60 * 1000; // 10 hours in milliseconds
   private readonly logger = new Logger(BufferMemoryService.name);
 
@@ -54,7 +54,7 @@ export class BufferMemoryService {
     }
   }
 
-  addMessage(email: string, message: ChatMessage): void {
+  addMessage(email: string, message: ChatResponseMessage): void {
     this.logger.log(`Adding message for email: ${email}`);
     const messages = this.buffer.get(email) || [];
     messages.push(message);
@@ -68,7 +68,7 @@ export class BufferMemoryService {
     );
   }
 
-  addMessages(email: string, messagesToAdd: ChatMessage[]): void {
+  addMessages(email: string, messagesToAdd: ChatResponseMessage[]): void {
     this.logger.log(`Adding multiple messages for email: ${email}`);
     const messages = this.buffer.get(email) || [];
     messages.push(...messagesToAdd);
@@ -82,7 +82,7 @@ export class BufferMemoryService {
     );
   }
 
-  getMessages(email: string): ChatMessage[] {
+  getMessages(email: string): ChatResponseMessage[] {
     this.logger.log(`Retrieving messages for email: ${email}`);
     const messages = this.buffer.get(email) || [];
     this.setExpiry(email); // Refresh the expiry

@@ -5,7 +5,7 @@ import { Message } from './entities/message.entity';
 import { Thread } from '../thread/entities/thread.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ChatMessage } from '@azure/openai';
+import { ChatResponseMessage } from '@azure/openai';
 
 @Injectable()
 export class MessageService {
@@ -30,7 +30,9 @@ export class MessageService {
     return `This action removes a #${id} message`;
   }
 
-  async findAllMessagesByThreadId(threadId: number): Promise<ChatMessage[]> {
+  async findAllMessagesByThreadId(
+    threadId: number,
+  ): Promise<ChatResponseMessage[]> {
     const messages: Message[] = await this.messageRepository.find({
       where: { thread: { id: threadId } },
       order: { id: 'ASC' },

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ChatMessage } from '@azure/openai';
+import { ChatResponseMessage, ChatRequestFunctionMessage } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
 import { PluginService } from 'src/plugin';
@@ -29,14 +29,13 @@ export class OpenaiChatService {
     plugin,
   }): Promise<Message> {
     // Initialize the message array with existing messages or an empty array
-    const chatHistory = await this.messageService.findAllMessagesByThreadId(
-      threadId,
-    );
+    const chatHistory: Array<ChatRequestFunctionMessage | ChatResponseMessage> =
+      await this.messageService.findAllMessagesByThreadId(threadId);
 
     try {
       // Initialize chat session with System message
       // Generic prompt engineering
-      const systemMessage: ChatMessage = {
+      const systemMessage: ChatResponseMessage = {
         role: 'system',
         content: `Current Date and Time is ${new Date().toISOString()}.
 User's name is ${senderName} and user's emailID is ${senderEmail}.
@@ -115,7 +114,8 @@ If user just says Hi or how are you to start conversation, you can respond with 
             chatHistory,
             { temperature: calledFunction.followUpTemperature || 0 },
           );
-        const final_response: ChatMessage = final_completion.choices[0].message;
+        const final_response: ChatResponseMessage =
+          final_completion.choices[0].message;
         this.logger.log(`final_response Response:`);
         this.logger.log(final_response);
         chatHistory.push(final_response);
