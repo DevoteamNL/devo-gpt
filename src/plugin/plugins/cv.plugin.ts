@@ -13,7 +13,7 @@ export class CVsPlugin {
   constructor(
     private readonly configService: ConfigService,
     private readonly cognitiveSearchService: CognitiveSearchService,
-  ) {}
+  ) { }
 
   @Definition({
     description: `Get the employees professional work experience context/details from Vector Database`,
@@ -34,7 +34,7 @@ export class CVsPlugin {
 Look at user question and look at employee work experience above see if you can find answer from above context, 
 if you don't find answer within context, say it do not know the answer.`,
     followUpTemperature: 0.7,
-    followUpModel: 'gpt-4',
+    followUpModel: 'gpt-35-turbo-16k',
   })
   private async getEmployeesWorkDetails({
     completeUserMessage,

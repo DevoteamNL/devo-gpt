@@ -20,6 +20,8 @@ import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
 import { ConfigService } from '@nestjs/config';
 import { Thread } from './entities/thread.entity';
 import { OpenaiChatService } from '../openai/openai-chat.service';
+import { Res } from '@nestjs/common/decorators';
+import { ServerResponse } from 'http';
 
 @UseGuards(GoogleTokenGuard)
 @Controller('thread')
@@ -30,7 +32,7 @@ export class ThreadController {
     private readonly messageService: MessageService,
     private readonly configService: ConfigService,
     private readonly OpenaiChatService: OpenaiChatService,
-  ) {}
+  ) { }
 
   @Post()
   async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
@@ -129,5 +131,54 @@ export class ThreadController {
       id: reply.id,
       data: reply.data,
     };
+  }
+
+  @Post(':threadId/messages/stream')
+  async addMessageToThreadAndStream(
+    @Request() req,
+    @Res() res: ServerResponse,
+    @Param('threadId') threadId: string,
+    @Body() messageContent: any,
+  ) {
+    const userMessageCount = await this.messageService.countUserMessages(
+      +threadId,
+    );
+    this.logger.log(`User message count: ${userMessageCount}`);
+    const MESSAGES_PER_THREAD = this.configService.get('MESSAGES_PER_THREAD');
+    if (userMessageCount >= MESSAGES_PER_THREAD) {
+      throw new HttpException(
+        {
+          status: HttpStatus.TOO_MANY_REQUESTS,
+          error: `You can only send ${MESSAGES_PER_THREAD} messages to a thread`,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const chatMessage = messageContent.text.trim();
+    await this.messageService.create({
+      threadId: +threadId,
+      data: {
+        role: 'user',
+        content: chatMessage,
+      },
+    });
+
+    const thread = await this.threadService.findOne(+threadId);
+    const senderName = req.user.name;
+    const senderEmail = req.user.username;
+    this.logger.log(
+      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
+    );
+
+    this.OpenaiChatService.getChatResponseStream({
+      senderName,
+      senderEmail,
+      threadId: thread.id,
+      plugin: thread.plugin,
+      writableStream: res,
+    });
+
+    return res;
   }
 }
