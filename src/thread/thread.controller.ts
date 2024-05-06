@@ -32,11 +32,16 @@ export class ThreadController {
     private readonly messageService: MessageService,
     private readonly configService: ConfigService,
     private readonly OpenaiChatService: OpenaiChatService,
-  ) { }
+  ) {}
 
   @Post()
-  async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
+  async create(
+    @Request() req,
+    @Res() res: ServerResponse,
+    @Body() createThreadDto: CreateThreadDto,
+  ) {
     createThreadDto.user = req.user;
+
     const thread: Thread = await this.threadService.create(createThreadDto);
     this.logger.log(`Created thread: ${JSON.stringify(thread)}`);
 
@@ -47,16 +52,18 @@ export class ThreadController {
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-    await this.OpenaiChatService.getChatResponse({
+
+    this.OpenaiChatService.getChatResponseStream({
       senderName,
       senderEmail,
       threadId: thread.id,
       plugin: thread.plugin,
+      writableStream: res,
+      userMessageCreatedAt: new Date(thread.createdAt).toISOString(),
     });
-    return {
-      ...thread,
-      messages: await this.messageService.findChatMessagesByThreadId(thread.id),
-    };
+
+    // stream of strings with the AI's response data and metadata
+    return res;
   }
 
   @Get()
@@ -86,54 +93,6 @@ export class ThreadController {
   }
 
   @Post(':threadId/messages')
-  async addMessageToThread(
-    @Request() req,
-    @Param('threadId') threadId: string,
-    @Body() messageContent: any,
-  ) {
-    const userMessageCount = await this.messageService.countUserMessages(
-      +threadId,
-    );
-    this.logger.log(`User message count: ${userMessageCount}`);
-    const MESSAGES_PER_THREAD = this.configService.get('MESSAGES_PER_THREAD');
-    if (userMessageCount >= MESSAGES_PER_THREAD) {
-      throw new HttpException(
-        {
-          status: HttpStatus.TOO_MANY_REQUESTS,
-          error: `You can only send ${MESSAGES_PER_THREAD} messages to a thread`,
-        },
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-    await this.messageService.create({
-      threadId: +threadId,
-      data: {
-        role: 'user',
-        content: messageContent.text,
-      },
-    });
-
-    const thread = await this.threadService.findOne(+threadId);
-    const chatMessage = messageContent.text;
-    const senderName = req.user.name;
-    const senderEmail = req.user.username;
-    this.logger.log(
-      `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
-    );
-    const reply = await this.OpenaiChatService.getChatResponse({
-      senderName,
-      senderEmail,
-      threadId,
-      plugin: thread.plugin,
-    });
-
-    return {
-      id: reply.id,
-      data: reply.data,
-    };
-  }
-
-  @Post(':threadId/messages/stream')
   async addMessageToThreadAndStream(
     @Request() req,
     @Res() res: ServerResponse,
@@ -156,7 +115,7 @@ export class ThreadController {
     }
 
     const chatMessage = messageContent.text.trim();
-    await this.messageService.create({
+    const userMessage = await this.messageService.create({
       threadId: +threadId,
       data: {
         role: 'user',
@@ -165,6 +124,7 @@ export class ThreadController {
     });
 
     const thread = await this.threadService.findOne(+threadId);
+
     const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
@@ -177,8 +137,10 @@ export class ThreadController {
       threadId: thread.id,
       plugin: thread.plugin,
       writableStream: res,
+      userMessageCreatedAt: new Date(userMessage.createdAt).toISOString(),
     });
 
+    // stream of strings with the AI's response data and metadata
     return res;
   }
 }
