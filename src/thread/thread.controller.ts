@@ -46,7 +46,10 @@ export class ThreadController {
     this.logger.log(`Created thread: ${JSON.stringify(thread)}`);
 
     // Calling Model to get response
-    const chatMessage = createThreadDto.message;
+    const chatMessage = createThreadDto.message.trim();
+    if (chatMessage.length === 0) {
+      throw new HttpException('No message was sent', HttpStatus.BAD_REQUEST);
+    }
     const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
@@ -115,6 +118,9 @@ export class ThreadController {
     }
 
     const chatMessage = messageContent.text.trim();
+    if (chatMessage.length === 0) {
+      throw new HttpException('No message was sent', HttpStatus.BAD_REQUEST);
+    }
     const userMessage = await this.messageService.create({
       threadId: +threadId,
       data: {
