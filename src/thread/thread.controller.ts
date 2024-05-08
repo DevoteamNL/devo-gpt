@@ -62,6 +62,7 @@ export class ThreadController {
       threadId: thread.id,
       plugin: thread.plugin,
       writableStream: res,
+      userMessageId: thread.messages[0].id,
       userMessageCreatedAt: new Date(thread.createdAt).toISOString(),
     });
 
@@ -143,6 +144,7 @@ export class ThreadController {
       threadId: thread.id,
       plugin: thread.plugin,
       writableStream: res,
+      userMessageId: userMessage.id,
       userMessageCreatedAt: new Date(userMessage.createdAt).toISOString(),
     });
 

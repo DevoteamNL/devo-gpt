@@ -11,11 +11,12 @@ import { PluginService } from 'src/plugin';
 import { ServerResponse } from 'http';
 
 export enum MetadataTagName {
+  USER_MESSAGE_ID = 'userMessageId',
   USER_MESSAGE_CREATED_AT = 'userMessageCreatedAt',
-  CREATED_AT = 'createdAt',
   THREAD_ID = 'threadId',
   ROLE = 'role',
-  MESSAGE_ID = 'messageId',
+  AI_MESSAGE_ID = 'aiMessageId',
+  AI_MESSAGE_CREATED_AT = 'aiMessageCreatedAt',
 }
 
 interface MetadataContent {
@@ -60,6 +61,7 @@ export class OpenaiChatService {
     threadId,
     plugin,
     writableStream,
+    userMessageId,
     userMessageCreatedAt,
   }: {
     senderName: string;
@@ -67,6 +69,7 @@ export class OpenaiChatService {
     threadId: number;
     plugin?: string;
     writableStream: ServerResponse;
+    userMessageId: number;
     userMessageCreatedAt: string;
   }) {
     // Initialize the message array with existing messages or an empty array
@@ -122,12 +125,16 @@ If user just says Hi or how are you to start conversation, you can respond with 
 
       writeMetadataToStream(writableStream, [
         {
-          data: new Date(userMessageCreatedAt).toISOString(),
-          metadataTag: MetadataTagName.USER_MESSAGE_CREATED_AT,
-        },
-        {
           data: threadId.toString(),
           metadataTag: MetadataTagName.THREAD_ID,
+        },
+        {
+          data: userMessageId.toString(),
+          metadataTag: MetadataTagName.USER_MESSAGE_ID,
+        },
+        {
+          data: new Date(userMessageCreatedAt).toISOString(),
+          metadataTag: MetadataTagName.USER_MESSAGE_CREATED_AT,
         },
       ]);
       writableStream.emit('drain');
@@ -208,11 +215,11 @@ If user just says Hi or how are you to start conversation, you can respond with 
         writeMetadataToStream(writableStream, [
           {
             data: createdMessage.id.toString(),
-            metadataTag: MetadataTagName.MESSAGE_ID,
+            metadataTag: MetadataTagName.AI_MESSAGE_ID,
           },
           {
             data: new Date(createdMessage.createdAt).toISOString(),
-            metadataTag: MetadataTagName.CREATED_AT,
+            metadataTag: MetadataTagName.AI_MESSAGE_CREATED_AT,
           },
         ]);
       } else {
@@ -229,11 +236,11 @@ If user just says Hi or how are you to start conversation, you can respond with 
         writeMetadataToStream(writableStream, [
           {
             data: initialResponseMessage.id.toString(),
-            metadataTag: MetadataTagName.MESSAGE_ID,
+            metadataTag: MetadataTagName.AI_MESSAGE_ID,
           },
           {
             data: new Date(initialResponseMessage.createdAt).toISOString(),
-            metadataTag: MetadataTagName.CREATED_AT,
+            metadataTag: MetadataTagName.AI_MESSAGE_CREATED_AT,
           },
         ]);
       }
