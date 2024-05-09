@@ -41,8 +41,6 @@ const writeMetadataToStream = (
 @Injectable()
 export class OpenaiChatService {
   private readonly logger = new Logger(OpenaiChatService.name);
-  private readonly gpt35Deployment = 'gpt-35-turbo';
-  private readonly gpt4Deployment = 'gpt-4';
   private readonly gpt4_32K_Deployment = 'gpt-4-32k';
 
   constructor(
