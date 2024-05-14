@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ChatCompletions,
-  ChatMessage,
+  ChatResponseMessage,
+  ChatRequestFunctionMessage,
   Completions,
   FunctionDefinition,
 } from '@azure/openai';
@@ -38,14 +39,14 @@ export class OpenaiService {
     ];
 
     // Initialize the message array with existing messages or an empty array
-    const messages: ChatMessage[] =
+    const messages: Array<ChatRequestFunctionMessage | ChatResponseMessage> =
       this.bufferMemoryService.getMessages(senderEmail);
 
     try {
       if (messages.length === 0) {
         // Initialize chat session with System message
         // Generic prompt engineering
-        const systemMessage: ChatMessage = {
+        const systemMessage: ChatResponseMessage = {
           role: 'system',
           content: `Current Date and Time is ${new Date().toISOString()}.
 User's name is ${senderName} and user's emailID is ${senderEmail}.
@@ -65,7 +66,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         messages.push(systemMessage);
       }
       // Add the new user message to the buffer
-      const userMessage: ChatMessage = {
+      const userMessage: ChatResponseMessage = {
         role: 'user',
         content: message,
       };
@@ -443,7 +444,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
 
   // Call OpenAI's Chat completions for string
   async getChatCompletions(
-    messages: ChatMessage[],
+    messages: ChatResponseMessage[],
     options: { temperature: number },
   ): Promise<ChatCompletions> {
     return this.azureOpenAIClient.getChatCompletions(

@@ -20,6 +20,8 @@ import { GoogleTokenGuard } from 'src/auth/guards/google-token.guard';
 import { ConfigService } from '@nestjs/config';
 import { Thread } from './entities/thread.entity';
 import { OpenaiChatService } from '../openai/openai-chat.service';
+import { Res } from '@nestjs/common/decorators';
+import { ServerResponse } from 'http';
 
 @UseGuards(GoogleTokenGuard)
 @Controller('thread')
@@ -33,28 +35,39 @@ export class ThreadController {
   ) {}
 
   @Post()
-  async create(@Request() req, @Body() createThreadDto: CreateThreadDto) {
+  async create(
+    @Request() req,
+    @Res() res: ServerResponse,
+    @Body() createThreadDto: CreateThreadDto,
+  ) {
     createThreadDto.user = req.user;
+
     const thread: Thread = await this.threadService.create(createThreadDto);
     this.logger.log(`Created thread: ${JSON.stringify(thread)}`);
 
     // Calling Model to get response
-    const chatMessage = createThreadDto.message;
+    const chatMessage = createThreadDto.message.trim();
+    if (chatMessage.length === 0) {
+      throw new HttpException('No message was sent', HttpStatus.BAD_REQUEST);
+    }
     const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-    await this.OpenaiChatService.getChatResponse({
+
+    this.OpenaiChatService.getChatResponseStream({
       senderName,
       senderEmail,
       threadId: thread.id,
       plugin: thread.plugin,
+      writableStream: res,
+      userMessageId: thread.messages[0].id,
+      userMessageCreatedAt: new Date(thread.createdAt).toISOString(),
     });
-    return {
-      ...thread,
-      messages: await this.messageService.findChatMessagesByThreadId(thread.id),
-    };
+
+    // stream of strings with the AI's response data and metadata
+    return res;
   }
 
   @Get()
@@ -84,8 +97,9 @@ export class ThreadController {
   }
 
   @Post(':threadId/messages')
-  async addMessageToThread(
+  async addMessageToThreadAndStream(
     @Request() req,
+    @Res() res: ServerResponse,
     @Param('threadId') threadId: string,
     @Body() messageContent: any,
   ) {
@@ -103,31 +117,38 @@ export class ThreadController {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    await this.messageService.create({
+
+    const chatMessage = messageContent.text.trim();
+    if (chatMessage.length === 0) {
+      throw new HttpException('No message was sent', HttpStatus.BAD_REQUEST);
+    }
+    const userMessage = await this.messageService.create({
       threadId: +threadId,
       data: {
         role: 'user',
-        content: messageContent.text,
+        content: chatMessage,
       },
     });
 
     const thread = await this.threadService.findOne(+threadId);
-    const chatMessage = messageContent.text;
+
     const senderName = req.user.name;
     const senderEmail = req.user.username;
     this.logger.log(
       `NAME:${senderName}, CHAT_MESSAGE:${chatMessage}, SENDER_EMAIL: ${senderEmail}`,
     );
-    const reply = await this.OpenaiChatService.getChatResponse({
+
+    this.OpenaiChatService.getChatResponseStream({
       senderName,
       senderEmail,
-      threadId,
+      threadId: thread.id,
       plugin: thread.plugin,
+      writableStream: res,
+      userMessageId: userMessage.id,
+      userMessageCreatedAt: new Date(userMessage.createdAt).toISOString(),
     });
 
-    return {
-      id: reply.id,
-      data: reply.data,
-    };
+    // stream of strings with the AI's response data and metadata
+    return res;
   }
 }

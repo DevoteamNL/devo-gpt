@@ -167,3 +167,7 @@ fabric.properties
 
 /.idea/copilot/*
 ```
+
+# Development settings
+.devcontainer/
+.vscode/
