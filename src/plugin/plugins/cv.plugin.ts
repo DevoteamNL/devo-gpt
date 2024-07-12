@@ -6,7 +6,7 @@ import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
 import { CognitiveSearchService } from '../../cognitive-search/cognitive-search.service';
 
-@Plugin({ displayName: 'CVs' })
+//@Plugin({ displayName: 'CVs' })
 export class CVsPlugin {
   private readonly logger = new Logger(CVsPlugin.name);
 

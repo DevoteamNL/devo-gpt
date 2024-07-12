@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net" modified="2024-02-06T09:23:01.317Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0" etag="tu8cdi8u72GYCQeeQOwm" version="23.0.2" type="device">
+  <diagram name="Page-1" id="uRciJI6UTiZAOhUQbsgc">
+    <mxGraphModel dx="1332" dy="1018" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="aj4ELmO6-LV9L3PNddZd-1" target="aj4ELmO6-LV9L3PNddZd-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-1" value="Login - Google Somg;e Sign on" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-2" value="Create user in DB with flag acess_granted =false" style="whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="aj4ELmO6-LV9L3PNddZd-4" target="aj4ELmO6-LV9L3PNddZd-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-4" value="homepage" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="aj4ELmO6-LV9L3PNddZd-7" target="aj4ELmO6-LV9L3PNddZd-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="aj4ELmO6-LV9L3PNddZd-7" target="aj4ELmO6-LV9L3PNddZd-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-7" value="Check? access_granted=true?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="420" y="500" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-9" value="homepage" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="580" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="aj4ELmO6-LV9L3PNddZd-11" value="show message on error page, reachptui tp infiniconenct team&amp;nbsp;&lt;br&gt;hardik.patel@decvotem.com to get access to inifitconnect" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="400" y="670" width="200" height="160" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

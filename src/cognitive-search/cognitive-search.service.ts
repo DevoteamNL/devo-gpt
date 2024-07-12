@@ -76,27 +76,27 @@ export class CognitiveSearchService {
         vector: {
           value: vectorValue,
           kNearestNeighborsCount: 4,
-          fields: ['contentVector'],
+          fields: ['content_vector'],
         },
-        select: ['title', 'content'],
-        top: 10,
+        select: ['metadata', 'content'],
+        top: 4,
       });
 
       const concatenatedResults: string[] = [];
       for await (const result of response.results) {
-        this.logger.log(`Title: ${result.document.title}`);
+        this.logger.log(`Metadata: ${result.document.metadata}`);
         // this.logger.debug(`Content: ${result.document.content}`);
         const employeeData = `
 
-Employee CV File Name: ${result.document.title}
-Employee Detail File Content START:
+Content Metadata: ${result.document.metadata}
+Content START:
 ${result.document.content.replace(/[\n\r]+/g, '\n')}
           
           
           
           
           
-Employee CV File Content END
+Content END
 ============================================================
           
           

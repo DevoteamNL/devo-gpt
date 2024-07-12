@@ -3,6 +3,7 @@ import { definitions } from './definition.decorator';
 import { findPlugin, pluginsByDisplayName } from './plugin.decorator';
 import './plugins/joan.plugin';
 import './plugins/cv.plugin';
+import './plugins/juridischloket.plugin';
 import { initializePlugins } from './plugin.decorator';
 import { ConfigService } from '@nestjs/config';
 import { CognitiveSearchService } from '../cognitive-search/cognitive-search.service';

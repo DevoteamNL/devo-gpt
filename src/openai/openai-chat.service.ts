@@ -40,8 +40,14 @@ export class OpenaiChatService {
         role: 'system',
         content: `Current Date and Time is ${new Date().toISOString()}.
 User's name is ${senderName} and user's emailID is ${senderEmail}.
- 
-You are a AI assistant who helps with ONLY topics that you can find in Plugins/Functions.
+
+Question can be asked in any language. Answer will be in the same language as question.
+
+You must call the function to get the answer, do not try to answer the question yourself.
+Follow steps, internal to you only, User does not need to know this.
+Step1: Convert user message to Dutch language and request for function call to JuridischloketPublicSite plugin/function.
+Step2: receive content from function call and provide translated response to user.
+Always call function
 
 If you are not sure about question ask for clarification or say you do not know the answer.
 

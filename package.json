@@ -22,6 +22,9 @@
   "dependencies": {
     "@azure/openai": "1.0.0-beta.6",
     "@azure/search-documents": "^12.0.0",
+    "@langchain/azure-openai": "^0.0.7",
+    "@langchain/community": "^0.0.53",
+    "@langchain/openai": "^0.0.28",
     "@nestjs/common": "^9.4.3",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -39,7 +42,7 @@
     "cookie-parser": "^1.4.6",
     "fuzzball": "^2.1.2",
     "googleapis": "^126.0.1",
-    "langchain": "^0.0.174",
+    "langchain": "^0.1.36",
     "mammoth": "^1.6.0",
     "moment-timezone": "^0.5.43",
     "nodejs-pptx": "^1.2.4",
