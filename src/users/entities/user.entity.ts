@@ -8,6 +8,7 @@ import {
 import { IsEmail } from 'class-validator';
 import { Thread } from '../../thread/entities/thread.entity';
 import { Feedback } from '../../message/feedback/entities/feedback.entity';
+import { PluginDisplayNameT } from '../../plugin/plugin.constants';
 
 @Entity()
 @Unique('UQ_USERNAME_PROVIDER', ['username', 'providerId'])
@@ -46,6 +47,14 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  // Whitelist of the plugins' names the user is permitted to access
+  @Column({
+    type: 'varchar',
+    array: true,
+    nullable: true,
+  })
+  plugins: PluginDisplayNameT[];
+
   constructor(
     providerId: string,
     username: string,
@@ -59,8 +68,8 @@ export class User {
   }
 
   toJSON(): UserDTO {
-    const { id, username, providerId } = this;
-    return { id, username, providerId };
+    const { id, username, providerId, plugins } = this;
+    return { id, username, providerId, plugins };
   }
 }
 
@@ -68,4 +77,5 @@ interface UserDTO {
   id: number;
   username: string;
   providerId: string;
+  plugins: PluginDisplayNameT[];
 }

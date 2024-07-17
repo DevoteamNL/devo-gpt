@@ -4,6 +4,7 @@ import { ConfigService } from '../types';
 import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
+import { PluginDisplayName } from '../plugin.constants';
 
 interface Desk {
   id: string;
@@ -19,7 +20,7 @@ interface ParkingSpotOptions {
   timeslot?: string;
 }
 
-@Plugin({ displayName: 'Joan' })
+@Plugin({ displayName: PluginDisplayName.JOAN })
 export class JoanPlugin {
   private axiosInstance: AxiosInstance;
   private token: string | null = null;
