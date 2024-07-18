@@ -1,4 +1,5 @@
-import { FunctionDefinition as FunctionDefinitionType } from '@azure/openai';
+// import { FunctionDefinition as FunctionDefinitionType } from '@azure/openai';
+import { FunctionDefinition as FunctionDefinitionType } from '@langchain/core/language_models/base';
 import { OpenAIModel } from '../config/constants';
 
 export type ConfigService = {
