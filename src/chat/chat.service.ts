@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OpenAI } from 'langchain/llms/openai';
 import { ConfigService } from '@nestjs/config';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { OpenAIModel } from '../config/constants';
 
 @Injectable()
 export class ChatService {
@@ -14,7 +15,7 @@ export class ChatService {
       temperature: 0.9,
       azureOpenAIApiKey: this.configService.get<string>('AZURE_OPENAI_API_KEY'),
       azureOpenAIApiVersion: '2023-07-01-preview',
-      azureOpenAIApiDeploymentName: 'gpt-35-turbo-16k',
+      azureOpenAIApiDeploymentName: OpenAIModel.gpt35_Turbo16kDeployment,
       azureOpenAIBasePath:
         'https://swedencentral.api.cognitive.microsoft.com/openai/deployments', // In Node.js defaults to process.env.AZURE_OPENAI_BASE_PATH
     });
@@ -22,7 +23,7 @@ export class ChatService {
       temperature: 0.9,
       azureOpenAIApiKey: this.configService.get<string>('AZURE_OPENAI_API_KEY'),
       azureOpenAIApiVersion: '2023-07-01-preview',
-      azureOpenAIApiDeploymentName: 'gpt-35-turbo-16k',
+      azureOpenAIApiDeploymentName: OpenAIModel.gpt35_Turbo16kDeployment,
       azureOpenAIBasePath:
         'https://swedencentral.api.cognitive.microsoft.com/openai/deployments', // In Node.js defaults to process.env.AZURE_OPENAI_BASE_PATH
     });

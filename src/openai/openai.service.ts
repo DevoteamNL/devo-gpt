@@ -10,14 +10,11 @@ import { JoanDeskService } from '../integrations/joan-desk/joan-desk.service';
 import { EmployeesService } from '../employees/employees.service';
 import { BufferMemoryService } from '../utils/buffer-memory/buffer-memory.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
+import { EMBEDDING_MODEL, OpenAIModel } from '../config/constants';
 
 @Injectable()
 export class OpenaiService {
   private readonly logger = new Logger(OpenaiService.name);
-  private readonly gpt35t16kDeployment = 'gpt-35-turbo-16k';
-  private readonly gpt35Deployment = 'gpt-35-turbo';
-  private readonly gpt4Deployment = 'gpt-4';
-  private readonly gpt432kDeployment = 'gpt-4-32k';
 
   constructor(
     private readonly joanDeskService: JoanDeskService,
@@ -73,7 +70,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
       messages.push(userMessage);
 
       const completion = await this.azureOpenAIClient.getChatCompletions(
-        this.gpt4Deployment,
+        OpenAIModel.gpt4_Deployment,
         messages,
         {
           temperature: 0.1,
@@ -165,7 +162,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         this.logger.debug(messages);
         const completionReservationDesks =
           await this.azureOpenAIClient.getChatCompletions(
-            this.gpt35Deployment,
+            OpenAIModel.gpt35_TurboDeployment,
             messages,
             { temperature: 0 },
           );
@@ -205,7 +202,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.logger.debug(messages);
           const completionAvailableDesks =
             await this.azureOpenAIClient.getChatCompletions(
-              this.gpt35Deployment,
+              OpenAIModel.gpt35_TurboDeployment,
               messages,
               { temperature: 0 },
             );
@@ -271,7 +268,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
         this.logger.debug(messages);
         const completionParkingReservation =
           await this.azureOpenAIClient.getChatCompletions(
-            this.gpt35Deployment,
+            OpenAIModel.gpt35_TurboDeployment,
             messages,
             {
               temperature: 0.3,
@@ -323,7 +320,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.logger.debug(messages);
           const completionParkingAvailability =
             await this.azureOpenAIClient.getChatCompletions(
-              this.gpt35t16kDeployment,
+              OpenAIModel.gpt35_Turbo16kDeployment,
               messages,
               { temperature: 0.3 },
             );
@@ -389,7 +386,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
           this.logger.debug(messages);
           const completionDeskReservations =
             await this.azureOpenAIClient.getChatCompletions(
-              this.gpt35t16kDeployment,
+              OpenAIModel.gpt35_Turbo16kDeployment,
               messages,
               { temperature: 0.7 },
             );
@@ -430,7 +427,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
     this.logger.log(`Generating embedding`);
     try {
       const response = await this.azureOpenAIClient.getEmbeddings(
-        'text-embedding-ada-002',
+        EMBEDDING_MODEL,
         [text],
       );
       // this.logger.debug(response.data['0'].embedding);
@@ -448,7 +445,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
     options: { temperature: number },
   ): Promise<ChatCompletions> {
     return this.azureOpenAIClient.getChatCompletions(
-      this.gpt4Deployment,
+      OpenAIModel.gpt4_Deployment,
       messages,
       options,
     );

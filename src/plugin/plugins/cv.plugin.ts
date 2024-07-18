@@ -1,10 +1,9 @@
-import axios, { AxiosInstance } from 'axios';
-import moment from 'moment-timezone';
 import { ConfigService } from '../types';
 import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
 import { CognitiveSearchService } from '../../cognitive-search/cognitive-search.service';
+import { OpenAIModel } from '../../config/constants';
 
 @Plugin({ displayName: 'CVs' })
 export class CVsPlugin {
@@ -34,7 +33,7 @@ export class CVsPlugin {
 Look at user question and look at employee work experience above see if you can find answer from above context, 
 if you don't find answer within context, say it do not know the answer.`,
     followUpTemperature: 0.7,
-    followUpModel: 'gpt-35-turbo-16k',
+    followUpModel: OpenAIModel.gpt35_Turbo16kDeployment,
   })
   private async getEmployeesWorkDetails({
     completeUserMessage,

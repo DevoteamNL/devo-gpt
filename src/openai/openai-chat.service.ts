@@ -7,8 +7,9 @@ import {
 } from '@azure/openai';
 import { MessageService } from '../message/message.service';
 import { AzureOpenAIClientService } from './azure-openai-client.service';
-import { PluginService } from 'src/plugin';
+import { PluginService } from '../plugin';
 import { ServerResponse } from 'http';
+import { OpenAIModel } from '../config/constants';
 
 export enum MetadataTagName {
   USER_MESSAGE_ID = 'userMessageId',
@@ -41,7 +42,6 @@ const writeMetadataToStream = (
 @Injectable()
 export class OpenaiChatService {
   private readonly logger = new Logger(OpenaiChatService.name);
-  private readonly gpt4_32K_Deployment = 'gpt-4-32k';
 
   constructor(
     private readonly messageService: MessageService,
@@ -98,7 +98,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
       this.logger.log(`CHAT_HISTORY: ${JSON.stringify(chatHistory)}`);
 
       const completion = await this.azureOpenAIClient.getChatCompletions(
-        this.gpt4_32K_Deployment,
+        OpenAIModel.gpt4_32K_Deployment,
         chatHistory,
         {
           temperature: 0.1,
@@ -166,7 +166,7 @@ If user just says Hi or how are you to start conversation, you can respond with 
 
         const finalCompletionEventStream: EventStream<ChatCompletions> =
           await this.azureOpenAIClient.streamChatCompletions(
-            calledFunction.followUpModel || this.gpt4_32K_Deployment,
+            calledFunction.followUpModel || OpenAIModel.gpt4_32K_Deployment,
             chatHistory,
             { temperature: calledFunction.followUpTemperature || 0 },
           );

@@ -4,6 +4,7 @@ import { ConfigService } from '../types';
 import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
+import { OpenAIModel } from '../../config/constants';
 
 interface Desk {
   id: string;
@@ -138,7 +139,7 @@ export class JoanPlugin {
       '\n\n\n' +
       'Desk Name,Reservation Start,Reservation end,Employee Name(Reserved By),Employee Email\n',
     followUpTemperature: 0.7,
-    followUpModel: 'gpt-35-turbo-16k',
+    followUpModel: OpenAIModel.gpt35_Turbo16kDeployment,
   })
   private async getDeskReservations({
     start_date,
@@ -422,7 +423,7 @@ User can also ask who has parking reservations? then you can provide him details
 
 `,
     followUpTemperature: 0.3,
-    followUpModel: 'gpt-35-turbo-16k',
+    followUpModel: OpenAIModel.gpt35_Turbo16kDeployment,
   })
   private async getAvailableParkingSpots(options: ParkingSpotOptions) {
     try {

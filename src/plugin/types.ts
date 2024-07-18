@@ -1,11 +1,18 @@
+import { FunctionDefinition as FunctionDefinitionType } from '@azure/openai';
+import { OpenAIModel } from '../config/constants';
+
 export type ConfigService = {
   get(key: string): string;
 };
 
-import { FunctionDefinition as FunctionDefinitionType } from '@azure/openai';
 export type FunctionDefinition = FunctionDefinitionType & {
   followUpPrompt: string;
   followUpTemperature?: number;
   clearAfterExecution?: boolean;
-  followUpModel?: 'gpt-35-turbo-16k' | 'gpt-35-turbo' | 'gpt-4' | 'gpt-4-32k';
+  followUpModel?:
+    | OpenAIModel.gpt35_Turbo16kDeployment
+    | OpenAIModel.gpt35_TurboDeployment
+    | OpenAIModel.gpt4_Deployment
+    | OpenAIModel.gpt4_32K_Deployment
+    | OpenAIModel.gpt4_o_Deployment;
 };
