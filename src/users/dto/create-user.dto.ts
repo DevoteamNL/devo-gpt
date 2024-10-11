@@ -1,3 +1,5 @@
+import { PluginDisplayNameT } from '../../plugin/plugin.constants';
+
 export class CreateUserDto {
   providerId: string;
   username: string;
@@ -5,4 +7,5 @@ export class CreateUserDto {
   refresh_token: string;
   name?: string;
   is_active?: boolean;
+  plugins?: PluginDisplayNameT[];
 }

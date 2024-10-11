@@ -1,12 +1,11 @@
-import axios, { AxiosInstance } from 'axios';
-import moment from 'moment-timezone';
 import { ConfigService } from '../types';
 import { Definition } from '../definition.decorator';
 import { Plugin } from '../plugin.decorator';
 import { Logger } from '@nestjs/common';
 import { CognitiveSearchService } from '../../cognitive-search/cognitive-search.service';
+import { PluginDisplayName } from '../plugin.constants';
 
-@Plugin({ displayName: 'CVs' })
+@Plugin({ displayName: PluginDisplayName.CVS })
 export class CVsPlugin {
   private readonly logger = new Logger(CVsPlugin.name);
 
