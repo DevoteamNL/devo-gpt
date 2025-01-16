@@ -117,16 +117,8 @@
 						"value": "keep-alive"
 					},
 					{
-						"key": "Cookie",
-						"value": "ajs_anonymous_id=871b22f8-221a-489b-af6e-53be02e14a49; ajs_user_id=39521637-0392-480f-b72f-5c671395e38d; session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhhcmRpay5wYXRlbEBkZXZvdGVhbS5jb20iLCJzdWIiOjEsImlhdCI6MTY5NzcwNjkzMSwiZXhwIjoxNzAwMjk4OTMxfQ.mn0z6HvDOU-xIPvyqU9YHEo0Vx3x7gV12ck2Y9cMK18"
-					},
-					{
 						"key": "DNT",
 						"value": "1"
-					},
-					{
-						"key": "If-None-Match",
-						"value": "W/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\""
 					},
 					{
 						"key": "Sec-Fetch-Dest",
@@ -239,16 +231,8 @@
 						"value": "keep-alive"
 					},
 					{
-						"key": "Cookie",
-						"value": "ajs_anonymous_id=871b22f8-221a-489b-af6e-53be02e14a49; ajs_user_id=39521637-0392-480f-b72f-5c671395e38d; session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhhcmRpay5wYXRlbEBkZXZvdGVhbS5jb20iLCJzdWIiOjEsImlhdCI6MTY5NzcwNjkzMSwiZXhwIjoxNzAwMjk4OTMxfQ.mn0z6HvDOU-xIPvyqU9YHEo0Vx3x7gV12ck2Y9cMK18"
-					},
-					{
 						"key": "DNT",
 						"value": "1"
-					},
-					{
-						"key": "If-None-Match",
-						"value": "W/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\""
 					},
 					{
 						"key": "Sec-Fetch-Dest",
